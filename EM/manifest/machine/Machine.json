@@ -1,0 +1,22 @@
+{
+    "generation-by" : "PARA, PopcornSAR",
+    "autosar-version" : "R20-11",
+    "manifest-type" : "machine-manifest",
+    "machine-name" : "Machine",
+    "trusted-platform-executable-launch-behavior" : "no-trusted-platform-support",
+    "default-application-timeout" : "undefined",
+    "environment-variables" : [
+    ],
+    "endpoints" : [
+        {
+            "connector" : "mlan0",
+            "ip-address" : "192.168.1.10"
+        }
+    ],
+    "sd-endpoints" : [
+        {
+            "ip-address" : "192.168.1.10",
+            "port" : 30490
+        }
+    ]
+}
