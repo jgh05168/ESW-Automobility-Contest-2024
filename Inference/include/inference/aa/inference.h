@@ -49,6 +49,10 @@ public:
 private:
     /// @brief Run software component
     void Run();
+
+    void TaskRequestFMethod();
+
+    void OnReceiveFMethod(const deepracer::service::fusiondata::proxy::methods::FMethod::Output& output);
  
 private:
     /// @brief Pool of port

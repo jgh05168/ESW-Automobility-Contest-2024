@@ -38,7 +38,7 @@ int main(int argc, char *argv[], char* envp[])
     bool araInitialized{true};
     
     // initialize AUTOSAR adaptive application
-    auto appInit = ara::core::Initialize();
+    auto appInit = ara::core::Initialize(); // 항상 호출해주어야 함
     if (!appInit.HasValue())
     {
         proceed = false;
@@ -49,20 +49,20 @@ int main(int argc, char *argv[], char* envp[])
     {
         ara::log::Logger& appLogger{ara::log::CreateLogger("INFR", "Inference's main function")};
         
-        // regist signals
+        // regist signals : 시그널 핸들러 등록
         std::signal(SIGTERM, SignalHandler);
         std::signal(SIGINT, SignalHandler);
         
-        // declaration of software components
+        // declaration of software components : 객체 선언 및 포인터 할당
         inference::aa::Inference swcInference;
         g_swcInference = &swcInference;
         
-        // initialize software component
+        // initialize software component : component 초기화 함수 호출
         proceed = swcInference.Initialize();
         
         if (proceed)
         {
-            // report execution state
+            // report execution state : EM에 보고를 위한 코드
             ara::exec::ExecutionClient executionClient;
             auto exec = executionClient.ReportExecutionState(ara::exec::ExecutionState::kRunning);
             if (exec.HasValue())
@@ -74,7 +74,7 @@ int main(int argc, char *argv[], char* envp[])
                 appLogger.LogError() << "Unable to report execution state";
                 araInitialized = false;
             }
-            // start software component
+            // start software component : 컴포넌트 시작
             swcInference.Start();
         }
         else
@@ -82,7 +82,7 @@ int main(int argc, char *argv[], char* envp[])
             appLogger.LogError() << "Unable to start application";
         }
         
-        // de-initialize AUTOSAR adaptive application
+        // de-initialize AUTOSAR adaptive application : 종료 후 초기화
         auto appDeinit = ara::core::Deinitialize();
         if (!appDeinit.HasValue())
         {

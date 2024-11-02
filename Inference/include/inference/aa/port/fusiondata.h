@@ -46,10 +46,11 @@ public:
     /// @brief Terminate port
     void Terminate();
     
-    
-    
     /// @brief Request with Response method using by software component, FMethod
-    void RequestFMethod();
+    void RequestFMethod(const deepracer::type::SensorFusionNode& sensorfusion);
+
+    void SetReceiveMethodFMethodHandler(
+        std::function<void(const deepracer::service::fusiondata::proxy::methods::FMethod::Output&)> handler);
     
 private:
     /// @brief Callback for find service
@@ -76,6 +77,8 @@ private:
     
     /// @brief Find service handle
     std::shared_ptr<ara::com::FindServiceHandle> m_findHandle;
+
+    std::function<void(const deepracer::service::fusiondata::proxy::methods::FMethod::Output& )> m_receiveMethodFMethodHandler;
 };
  
 } /// namespace port

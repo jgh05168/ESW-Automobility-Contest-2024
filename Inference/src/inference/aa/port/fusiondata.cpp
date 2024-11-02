@@ -37,13 +37,14 @@ void FusionData::Start()
     m_logger.LogVerbose() << "FusionData::Start";
     
     // regist callback
+    // Find Service에 대한 핸들러 정의 -> 서비스 찾는 과정
     ara::core::InstanceSpecifier specifier{"Inference/AA/FusionData"};
     auto handler = [this](ara::com::ServiceHandleContainer<deepracer::service::fusiondata::proxy::SvFusionDataProxy::HandleType> handles,
                           ara::com::FindServiceHandle findHandle) {
         this->Find(handles, findHandle);
     };
     
-    // find service
+    // find service : Find Service 호출
     auto find = deepracer::service::fusiondata::proxy::SvFusionDataProxy::StartFindService(handler, specifier);
     if (find.HasValue())
     {
@@ -58,6 +59,7 @@ void FusionData::Start()
     m_running = true;
 }
  
+// FPort 종료 처리 함수
 void FusionData::Terminate()
 {
     m_logger.LogVerbose() << "FusionData::Terminate";
@@ -67,7 +69,8 @@ void FusionData::Terminate()
     
     // clear service proxy
     if (m_interface)
-    {
+    {   
+        // method는 R-R이기 때문에 Stop Sub 할 필요가 없다.
         
         // stop find service
         m_interface->StopFindService(*m_findHandle);
@@ -76,10 +79,13 @@ void FusionData::Terminate()
         m_logger.LogVerbose() << "FusionData::Terminate::StopFindService";
     }
 }
- 
+
+// Find Service에 대한 핸들러 함수
 void FusionData::Find(ara::com::ServiceHandleContainer<deepracer::service::fusiondata::proxy::SvFusionDataProxy::HandleType> handles, ara::com::FindServiceHandle findHandle)
 {
     // check finding handles
+    // 찾고자 하는 핸들 체크
+    // 만약 핸들이 없다면 해당 함수는 return 된다.
     if (handles.empty())
     {
         m_logger.LogVerbose() << "FusionData::Find::Service Instances not found";
@@ -97,6 +103,7 @@ void FusionData::Find(ara::com::ServiceHandleContainer<deepracer::service::fusio
     }
     
     // create proxy
+    // Proxy 생성 : 핸들러가 이미 존재하는지 체크
     if (m_interface)
     {
         m_logger.LogVerbose() << "FusionData::Find::Proxy is already running";
@@ -111,14 +118,19 @@ void FusionData::Find(ara::com::ServiceHandleContainer<deepracer::service::fusio
         m_findHandle = std::make_shared<ara::com::FindServiceHandle>(findHandle);
         m_found = true;
         
+
+        // 이 아래에서 Event, Field는 Sub 요청을 보낸다
+        // 여기 // 
     }
 }
- 
-void FusionData::RequestFMethod()
+
+
+// FMethod 처리에 대한 Request 및 Result 처리 함수
+void FusionData::RequestFMethod(const deepracer::type::SensorFusionNode& sensorfusion)
 {
     if (m_found)
     {
-        auto request = m_interface->FMethod();
+        auto request = m_interface->FMethod(sensorfusion);
         request.wait();
         auto response = request.GetResult();
         if (response.HasValue())
@@ -127,6 +139,11 @@ void FusionData::RequestFMethod()
             
             auto result = response.Value();
             // put your logic
+            
+            if (m_receiveMethodFMethodHandler != nullptr)
+            {
+                m_receiveMethodFMethodHandler(result);
+            }
         }
         else
         {
@@ -134,6 +151,13 @@ void FusionData::RequestFMethod()
         }
     }
 }
+
+void FusionData::SetReceiveMethodFMethodHandler(
+    std::function<void(const deepracer::service::fusiondata::proxy::methods::FMethod::Output&)> handler)
+{
+    m_receiveMethodFMethodHandler = handler;
+}
+
  
 } /// namespace port
 } /// namespace aa

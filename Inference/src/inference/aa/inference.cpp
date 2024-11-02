@@ -15,6 +15,11 @@
 /// INCLUSION HEADER FILES
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 #include "inference/aa/inference.h"
+
+// opencv header. => 추후 딥레이서에 설치되어있는지 확인해봐야할듯 ? => 설치했다고 답변받음
+#include <opencv2/opencv.hpp>
+#include <vector>
+
  
 namespace inference
 {
@@ -22,8 +27,8 @@ namespace aa
 {
  
 Inference::Inference()
-    : m_logger(ara::log::CreateLogger("INFR", "SWC", ara::log::LogLevel::kVerbose))
-    , m_workers(1)
+    : m_logger(ara::log::CreateLogger("INFR", "SWC", ara::log::LogLevel::kVerbose)) // Logger 객체 초기화
+    , m_workers(2)  // Run() 함수에서 m_workers.Async에 등록가능한 함수 갯수
 {
 }
  
@@ -37,13 +42,17 @@ bool Inference::Initialize()
     
     bool init{true};
     
+    // fusion PPort data
     m_FusionData = std::make_shared<inference::aa::port::FusionData>();
+    // simulator PPort data
     m_SimulatorData = std::make_shared<inference::aa::port::SimulatorData>();
+    // inference RPort data
     m_InferenceData = std::make_shared<inference::aa::port::InferenceData>();
     
     return init;
 }
  
+// 컴포넌트 시작 함수
 void Inference::Start()
 {
     m_logger.LogVerbose() << "Inference::Start";
@@ -56,6 +65,7 @@ void Inference::Start()
     Run();
 }
  
+// 컴포넌트 종료 함수
 void Inference::Terminate()
 {
     m_logger.LogVerbose() << "Inference::Terminate";
@@ -64,15 +74,162 @@ void Inference::Terminate()
     m_SimulatorData->Terminate();
     m_InferenceData->Terminate();
 }
- 
+
+// 컴포넌트 수행 함수
 void Inference::Run()
 {
     m_logger.LogVerbose() << "Inference::Run";
     
+    // 매 주기마다 IEvent 데이터를 전송
     m_workers.Async([this] { m_InferenceData->SendEventIEventCyclic(); });
+    /*
+    inference에서 처리해야 할 일
+    1. Fusion에서 데이터 수신 : TaskRequestFMethod()
+        1-2. Fusion 측에 Method 요청
+    2. 요청 받으면 모델 판별 시작   
+    3. Navigator에 데이터 송신 : SendEventIEventCyclic()
+    */
+    
+    /*
+    실행 순서 : 
+    Run() -> TaskRequestFMethod() -> Response 처리 핸들러(SetReceiveMethodFMethodHandler) 등록
+        -> RequestFMethod() -> 데이터 받았으면, OnReceiveFMethod() -> 모델 추론 -> WriteDataIEvent()
+    */
+
+    m_workers.Async([this] {TaskRequestFMethod(); });
+
     
     m_workers.Wait();
 }
+
+
+// FusionData에 대한 요청
+void Inference::TaskRequestFMethod()
+{
+    // FMethod 핸들러 등록
+    m_FusionData->SetReceiveMethodFMethodHandler([this](const auto& output)
+    {
+        // 여기서 output은 Camera & Lidar 정보를 담는 구조체
+        OnReceiveFMethod(output);
+    })
+
+
+    // Fusion Data 요청
+    m_logger.LogInfo() << "Inference::RequestFMethod (sensorfusion)";
+    m_FusionData->RequestFMethod(deepracer::type::SensorFusionNode)
+    
+}
+
+
+// Fusion FMethod에 대한 Response를 받았을시의 처리 함수
+void Inference::OnReceiveFMethod(const deepracer::service::fusiondata::proxy::methods::FMethod::Output& output)
+{
+    /*상수 정의*/
+    const int THRESHOLD = 0;
+    const int PXL_MAX_VALUE = 255;
+    const int ROW_IDX = 40;
+    const int MASK_VALUE = 0;
+    const int height = 120;
+    const int width = 160;
+    const int channel = 2;
+
+    m_logger.LogInfo() << "Inference::OnReceiveFMethod:" << output.fusion_data;
+    // 받아온 데이터 전처리 진행
+
+    // 1. 카메라 데이터 전처리 진행 => 받아올 때, 하나의 버퍼로 보내지기 때문에, 이미지 디코딩 진행 (camera_node_test 코드 참고)
+    std::vector<cv::Mat> channels(channel);
+    cv::Mat tmp_img;
+    cv::Mat gray_img;
+    cv::Mat retImg;
+    for (const auto& cam_data : output.fusion_data.camera_data)
+    {   
+        // 1-1. 버퍼로 처리된 이미지 디코딩
+        tmp_img = cv::imdecode(cam_data, cv::IMREAD_COLOR);    // 버퍼에서 이미지로 변환 시 bgr8 타입으로 변환하기
+        // 예외 처리
+        if (tmp_img.empty() || tmp_img.type() != CV_8UC3)
+        {
+            m_logger.LogError() << "Invalid camera data format";
+            continue;
+        }
+        
+        // 1-2. 이미지 그레이스케일로 변환
+        try
+        {
+            cv::cvtColor(tmp_img, gray_img, cv::COLOR_BRG2GRAY);
+        }
+        catch(...)
+        {
+            m_logger.LogError() << "cvtColor Failed";
+            continue;
+        }
+
+        // 1-3. 크기 resize
+        try 
+        {
+            cv::resize(gray_img, gray_img, cv::Size(width, height));
+        }
+        catch (...)
+        {
+            m_logger.LogError() << "Resize Failed";
+            continue;
+        }
+
+        // 1-4. 255 넘는 값들에 대해 임계값 처리
+        try
+        {
+            cv::threshold(gray_img, gray_img, THRESHOLD, PXL_MAX_VALUE, cv::THRESH_BINARY + cv::THRESH_OTSU);
+        }
+        catch(...)
+        {
+            m_logger.LogError() << "Threshold Failed";
+            continue;
+        }
+
+
+        // 1-5. 상단 마스킹 진행
+        try
+        {
+            for (int j = 0; j < ROW_IDX; j++)
+            {
+                for (int i = 0; i < gray_img.cols; i++)
+                    {
+                        gray_img.at<uchar>(j, i) = MASK_VALUE;
+                    }
+            }
+        }
+        catch (...)
+        {
+            m_logger.LogError() << "Masking Failed";
+            continue;
+        }
+                
+        // 1-6. 새로운 배열에 전처리된 이미지 추가
+        channels.push_back(gray_img);
+    }
+
+    // 1-7. 채널 이미지 merge하기 -> (2, 160, 120)의 크기가 된다.
+    cv::merge(channels, retImg);
+
+
+    // 2-1. Mat으로 변환한 이미지 데이터를 1차원 행렬로 변환(입력에 사용)
+    vector<float> tmp_inputPtr;
+    for (int c = 0; c < channel; c++) {
+        for (int  h = 0; h < height; h++) {
+            for (int w = 0; w < width; w++) {
+                tmp_inputPtr.push_back(retImg.at<cv::Vec2b>(h, w)[c]);
+            }
+        }
+    }
+    // 2-2. vector로 이루어진 tmp_inputPtr을 array로 변경
+    float inputPtr[tmp_inputPtr.size()];
+    std::copy(tmp_inputPtr.begin(), tmp_inputPtr.end(), inputPtr);
+
+    // 3. Lidar Data 처리
+    
+    
+    // 3. 
+}
+
  
 } /// namespace aa
 } /// namespace inference
