@@ -15,7 +15,12 @@
 /// INCLUSION HEADER FILES
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 #include "servo/aa/servo.h"
- 
+#include "servo/aa/servo_mgr.hpp"
+#include "servo/aa/led_mgr.hpp"
+
+//json 사용
+#include "json/json.h"
+
 namespace servo
 {
 namespace aa
@@ -63,9 +68,24 @@ void Servo::Run()
 {
     m_logger.LogVerbose() << "Servo::Run";
     
-    m_workers.Async([this] { m_NavigateData->ReceiveEventNEventCyclic(); });
+    //m_workers.Async([this] { m_NavigateData->ReceiveEventNEventCyclic(); });
+    m_workers.Async([this] { TaskReceiveNEventCyclic(); });
     
     m_workers.Wait();
+}
+
+void Servo::TaskReceiveNEventCyclic()
+{
+    m_NavigateData->SetReceiveEventINventHandler([this](const auto& navigateMsg)
+    {
+        Drive(navigateMsg);
+    });
+    m_NavigateData->ReceiveEventNEventCyclic();
+}
+
+void Servo::Drive(const deepracer::service::navigatedata::proxy::events::NEvent::SampleType& navigateMsg)
+{
+    servoMgr->servoSubscriber(navigateMsg.throttle, navigateMsg.angle); 
 }
  
 } /// namespace aa

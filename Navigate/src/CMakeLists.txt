@@ -18,8 +18,8 @@ Para_Target(${PARA_APP_NAME}
 target_include_directories(${PARA_APP_NAME}
                            PRIVATE
                            ${CMAKE_CURRENT_SOURCE_DIR}/include
-                           ${CMAKE_CURRENT_SOURCE_DIR}/src/navigate/aa/json  # JSON 헤더 파일 경로 추가
-                           ${CMAKE_CURRENT_SOURCE_DIR}/src/navigate/aa)  # constants.hpp 경로 추가
+                           ${CMAKE_CURRENT_SOURCE_DIR}/navigate/aa/json  # JSON 헤더 파일 경로 추가
+                           ${CMAKE_CURRENT_SOURCE_DIR}/navigate/aa)  # constants.hpp 경로 추가
 # ============================================================================
 target_link_libraries(${PARA_APP_NAME}
                       PRIVATE

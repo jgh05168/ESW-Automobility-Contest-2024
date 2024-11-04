@@ -47,6 +47,8 @@ public:
 private:
     /// @brief Run software component
     void Run();
+    void TaskReceiveNEventCyclic()
+    void Drive(const deepracer::service::navigatedata::proxy::events::NEvent::SampleType& navigateMsg)
  
 private:
     /// @brief Pool of port

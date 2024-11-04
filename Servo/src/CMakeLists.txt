@@ -17,15 +17,23 @@ Para_Target(${PARA_APP_NAME}
 # ============================================================================
 target_include_directories(${PARA_APP_NAME}
                            PRIVATE
-                           ${CMAKE_CURRENT_SOURCE_DIR}/include)
+                           ${CMAKE_CURRENT_SOURCE_DIR}/include
+                           ${CMAKE_CURRENT_SOURCE_DIR}/src/servo/aa/json)
 # ============================================================================
 target_link_libraries(${PARA_APP_NAME}
                       PRIVATE
-                      pthread)
+                      pthread
+                      stdc++fs)
 # ============================================================================
 target_sources(${PARA_APP_NAME}
                PRIVATE
                servo/aa/port/navigatedata.cpp
                servo/aa/servo.cpp
                main.cpp
+               servo/aa/bios_version.cpp
+               servo/aa/jsoncpp.cpp
+               servo/aa/led_mgr.cpp
+               servo/aa/pwm.cpp
+               servo/aa/servo_mgr.cpp
+               servo/aa/utility.cpp
 )
