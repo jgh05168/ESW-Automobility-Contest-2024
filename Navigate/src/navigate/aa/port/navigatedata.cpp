@@ -140,7 +140,7 @@ void NavigateData::SendEventNEventTriggered(const deepracer::service::navigateda
         m_logger.LogError() << "NavigateData::SendEventNEventTriggered::Send::" << send.Error().Message();
     }
 }
- 
+
 } /// namespace port
 } /// namespace aa
 } /// namespace navigate
