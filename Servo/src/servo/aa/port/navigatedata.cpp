@@ -224,6 +224,18 @@ void NavigateData::ReadDataNEvent(ara::com::SamplePtr<deepracer::service::naviga
 {
     auto data = *samplePtr.Get();
     // put your logic
+
+    // NEvent 핸들러가 등록되어 있을시 해당 핸들러는 값과 함께 호출한다.
+    if (m_receiveEventNEventHandler != nullptr)
+    {
+        m_receiveEventNEventHandler(data);
+    }
+}
+
+void NavigateData::SetReceiveEventNEventHandler(
+    std::function<void(const deepracer::service::navigatedata::proxy::events::NEvent::SampleType&)> handler)
+{
+    m_receiveEventNEventHandler = handler;
 }
  
 } /// namespace port
