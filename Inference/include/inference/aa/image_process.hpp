@@ -22,6 +22,11 @@
 #include "inference/aa/port/inferencedata.h"
 #include <unordered_map>
 
+namespace inference
+{
+namespace aa
+{
+
 namespace InferTask {
     class ImgProcessBase
     {
@@ -105,3 +110,7 @@ namespace InferTask {
     };
 }
 #endif
+
+}
+
+}

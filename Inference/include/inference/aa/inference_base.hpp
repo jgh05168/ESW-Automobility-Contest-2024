@@ -20,6 +20,11 @@
 #include "inference/aa/image_process.hpp"
 #include <memory>
 
+namespace inference
+{
+namespace aa
+{
+
 namespace InferTask {
     class InferenceBase
     {
@@ -41,3 +46,7 @@ namespace InferTask {
     };
 }
 #endif
+
+}
+
+}
