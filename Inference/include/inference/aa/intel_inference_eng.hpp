@@ -24,6 +24,10 @@
 #include "deepracer_interfaces_pkg/msg/infer_results_array.hpp"
 #include <atomic>
 
+namespace inference
+{
+namespace aa
+{
 namespace IntelInferenceEngine {
     class RLInferenceModel : public InferTask::InferenceBase
     {
@@ -44,7 +48,7 @@ namespace IntelInferenceEngine {
         virtual void stopInference() override;
         /// Callback method to retrieve sensor data.
         /// @param msg Message returned by the ROS messaging system.
-        void sensorCB(const deepracer_interfaces_pkg::msg::EvoSensorMsg::SharedPtr msg);
+        void sensorCB(const deepracer::service::fusiondata::proxy::methods::FMethod::Output& output);
 
     private:
         // /// Inference node object
@@ -70,3 +74,7 @@ namespace IntelInferenceEngine {
     };
 }
 #endif
+
+}
+
+}

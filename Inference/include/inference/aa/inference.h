@@ -20,6 +20,8 @@
 #include "inference/aa/port/fusiondata.h"
 #include "inference/aa/port/simulatordata.h"
 #include "inference/aa/port/inferencedata.h"
+
+#include "inference/aa/intel_inference_eng.hpp"
  
 #include "para/swc/port_pool.h"
  
@@ -69,6 +71,9 @@ private:
     
     /// @brief Instance of Port {Inference.InferenceData}
     std::shared_ptr<inference::aa::port::InferenceData> m_InferenceData;
+
+    /// @brief Inference를 위한 각종 무언가 
+    std::shared_ptr<inference::aa::IntelInferenceEngine::RLInferenceModel> m_Inference;
 };
  
 } /// namespace aa
