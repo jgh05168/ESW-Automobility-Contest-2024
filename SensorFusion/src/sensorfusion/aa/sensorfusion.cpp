@@ -36,8 +36,9 @@ bool SensorFusion::Initialize()
     m_logger.LogVerbose() << "SensorFusion::Initialize";
     
     bool init{true};
-    
+    //PPort
     m_FusionData = std::make_shared<sensorfusion::aa::port::FusionData>();
+    //RPort
     m_CameraData = std::make_shared<sensorfusion::aa::port::CameraData>();
     m_LidarData = std::make_shared<sensorfusion::aa::port::LidarData>();
     
@@ -47,8 +48,9 @@ bool SensorFusion::Initialize()
 void SensorFusion::Start()
 {
     m_logger.LogVerbose() << "SensorFusion::Start";
-    
+    //피포
     m_FusionData->Start();
+    //알포
     m_CameraData->Start();
     m_LidarData->Start();
     
@@ -69,10 +71,39 @@ void SensorFusion::Run()
 {
     m_logger.LogVerbose() << "SensorFusion::Run";
     
-    m_workers.Async([this] { m_CameraData->ReceiveEventCEventCyclic(); });
-    m_workers.Async([this] { m_LidarData->ReceiveEventLEeventCyclic(); });
+    m_workers.Async([this] { TaskReceiveCEventCyclic(); });
+    m_workers.Async([this] { TaskReceiveLEventCyclic(); });
+
     
     m_workers.Wait();
+}
+
+//CameraData CEvent의 Cyclic 수신처리에 대한 수행
+void SensorFusion::TaskReceiveCEventCyclic()
+{
+    m_CameraData->SetReceiveEventCEventHandler([this](const auto& sample)
+    {
+        OnReceiveCEvent(sample);
+    });
+    m_CameraData->ReceiveEventCEventCyclic();
+}
+//LidarData LEvent의 Cyclic 수신처리에 대한 수행
+void SensorFusion::TaskReceiveLEventCyclic()
+{
+    m_LidarData->SetReceiveEventLEventHandler([this](const auto& sample)
+    {
+        OnReceiveLEvent(sample);
+    });
+    m_LidarData->ReceiveEventLEeventCyclic();
+}
+// CameraData CEvent를 받았을시의 처리 함수
+void SensorFusion::OnReceiveCEvent(const deepracer::service::cameradata::proxy::events::CEvent::SampleType& sample)
+{
+    m_logger.LogInfo() << "SensorFusion::OnReceiveCEvent:" << sample;
+}
+void SensorFusion::OnReceiveLEvent(const deepracer::service::lidardata::proxy::events::LEevent::SampleType& sample) //LEevent?
+{
+    m_logger.LogInfo() << "SensorFusion::OnReceiveLEvent:" << sample;
 }
  
 } /// namespace aa

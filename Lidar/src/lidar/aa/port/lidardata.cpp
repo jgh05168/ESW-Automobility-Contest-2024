@@ -12,7 +12,9 @@
 /// SOFTWARE COMPONENT NAME           : Lidar
 /// GENERATED DATE                    : 2024-10-25 13:47:26
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-#include "lidar/aa/port/lidar.h"
+#include "lidar/aa/port/lidardata.h"
+
+using namespace sl;
  
 namespace deepracer
 {
@@ -41,23 +43,30 @@ namespace aa
 namespace port
 {
  
-Lidar::Lidar()
+LidarData::LidarData()
     : m_logger(ara::log::CreateLogger("LID", "PORT", ara::log::LogLevel::kVerbose))
     , m_running{false}
-    , m_LEeventData{0LL, {{0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}}, {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}}, {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}}}}
+    , m_LEeventData
+    {0LL, 
+        {
+            {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, 
+            {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}}, 
+            {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}}
+        }
+    }
 {
 }
  
-Lidar::~Lidar()
+LidarData::~LidarData()
 {
 }
  
-void Lidar::Start()
+void LidarData::Start()
 {
-    m_logger.LogVerbose() << "Lidar::Start";
+    m_logger.LogVerbose() << "LidarData::Start";
     
     // construct skeleton
-    ara::core::InstanceSpecifier specifier{"Lidar/AA/Lidar"};
+    ara::core::InstanceSpecifier specifier{"Lidar/AA/LidarData"};
     m_interface = std::make_shared<deepracer::service::lidardata::skeleton::SvLidarDataSkeletonImpl>(specifier);
     
     // offer service
@@ -74,25 +83,62 @@ void Lidar::Start()
     }
 }
  
-void Lidar::Terminate()
+void LidarData::Terminate()
 {
-    m_logger.LogVerbose() << "Lidar::Terminate";
+    m_logger.LogVerbose() << "LidarData::Terminate";
     
     // stop port
     m_running = false;
     
     // stop offer service
     m_interface->StopOfferService();
-    m_logger.LogVerbose() << "Lidar::Terminate::StopOfferService";
+    m_logger.LogVerbose() << "LidarData::Terminate::StopOfferService";
 }
  
-void Lidar::WriteDataLEevent(const deepracer::service::lidardata::skeleton::events::LEevent::SampleType& data)
+void LidarData::produceScannig() {
+    if (!m_drv) {
+        m_logger.LogError() << "Lidar driver is not initialized.";
+        return;
+    }
+
+    deepracer::service::lidardata::skeleton::events::LEevent::SampleType& scan_data;
+
+    sl_lidar_response_measurement_node_hq_t nodes[8192];
+    size_t count = sizeof(nodes) / sizeof(sl_lidar_response_measurement_node_hq_t);
+
+    // 데이터 캡처
+    auto op_result = m_drv->grabScanDataHq(nodes, count);
+
+    if (SL_IS_OK(op_result)) {
+        m_drv->ascendScanData(nodes, count);
+
+        for (size_t pos = 0; pos < (int)count; ++pos) {
+            // 캡처한 데이터를 scan_data에 저장
+            scan_data.scans[pos].distance = nodes[pos].dist_mm_q2 / 4.0f;
+            scan_data.scans[pos].angle = (nodes[pos].angle_z_q14 * 90.f) / 16384.f;
+            scan_data.scans[pos].qual = nodes[pos].quality >> SL_LIDAR_RESP_MEASUREMENT_QUALITY_SHIFT;
+        }
+
+        scan_data.timestamp = getCurrentTimestamp();
+        
+        WriteDataLEevent(scan_data);
+    } else {
+        m_logger.LogError() << "Failed to grab scan data from Lidar.";
+    }
+}
+
+int64_t LidarData::getCurrentTimestamp() const {
+    using namespace std::chrono;
+    return duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+}
+
+void LidarData::WriteDataLEevent(const deepracer::service::lidardata::skeleton::events::LEevent::SampleType& data)
 {
     std::lock_guard<std::mutex> lock(m_mutex);
     m_LEeventData = data;
 }
  
-void Lidar::SendEventLEeventCyclic()
+void LidarData::SendEventLEeventCyclic()
 {
     while (m_running)
     {
@@ -101,45 +147,46 @@ void Lidar::SendEventLEeventCyclic()
             auto send = m_interface->LEevent.Send(m_LEeventData);
             if (send.HasValue())
             {
-                m_logger.LogVerbose() << "Lidar::SendEventLEeventCyclic::Send";
+                m_logger.LogVerbose() << "LidarData::SendEventLEeventCyclic::Send";
             }
             else
             {
-                m_logger.LogError() << "Lidar::SendEventLEeventCyclic::Send::" << send.Error().Message();
+                m_logger.LogError() << "LidarData::SendEventLEeventCyclic::Send::" << send.Error().Message();
             }
         }
         std::this_thread::sleep_for(std::chrono::seconds(1));
     }
 }
  
-void Lidar::SendEventLEeventTriggered()
+void LidarData::SendEventLEeventTriggered()
 {
     std::lock_guard<std::mutex> lock(m_mutex);
     auto send = m_interface->LEevent.Send(m_LEeventData);
     if (send.HasValue())
     {
-        m_logger.LogVerbose() << "Lidar::SendEventLEeventTriggered::Send";
+        m_logger.LogVerbose() << "LidarData::SendEventLEeventTriggered::Send";
     }
     else
     {
-        m_logger.LogError() << "Lidar::SendEventLEeventTriggered::Send::" << send.Error().Message();
+        m_logger.LogError() << "LidarData::SendEventLEeventTriggered::Send::" << send.Error().Message();
     }
 }
  
-void Lidar::SendEventLEeventTriggered(const deepracer::service::lidardata::skeleton::events::LEevent::SampleType& data)
+void LidarData::SendEventLEeventTriggered(const deepracer::service::lidardata::skeleton::events::LEevent::SampleType& data)
 {
     std::lock_guard<std::mutex> lock(m_mutex);
     m_LEeventData = data;
     auto send = m_interface->LEevent.Send(m_LEeventData);
     if (send.HasValue())
     {
-        m_logger.LogVerbose() << "Lidar::SendEventLEeventTriggered::Send";
+        m_logger.LogVerbose() << "LidarData::SendEventLEeventTriggered::Send";
     }
     else
     {
-        m_logger.LogError() << "Lidar::SendEventLEeventTriggered::Send::" << send.Error().Message();
+        m_logger.LogError() << "LidarData::SendEventLEeventTriggered::Send::" << send.Error().Message();
     }
 }
+
  
 } /// namespace port
 } /// namespace aa
