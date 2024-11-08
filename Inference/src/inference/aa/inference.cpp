@@ -440,7 +440,6 @@ void Inference::OnReceiveFMethod(const deepracer::service::fusiondata::proxy::me
     // loadModel의 경우, inference_node.cpp에서 먼저 처리한다. 이 부분 다시 파봐야할듯함
     m_Inference->loadModel("", );
 
-
 }
 
 
