@@ -10,12 +10,13 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// GENERATED FILE NAME               : sensorfusion.cpp
 /// SOFTWARE COMPONENT NAME           : SensorFusion
-/// GENERATED DATE                    : 2024-10-25 13:47:26
+/// GENERATED DATE                    : 2024-11-07 14:01:17
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// INCLUSION HEADER FILES
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 #include "sensorfusion/aa/sensorfusion.h"
  
+
 namespace sensorfusion
 {
 namespace aa
@@ -94,14 +95,14 @@ void SensorFusion::TaskReceiveLEventCyclic()
     {
         OnReceiveLEvent(sample);
     });
-    m_LidarData->ReceiveEventLEeventCyclic();
+    m_LidarData->ReceiveEventLEventCyclic();
 }
 // CameraData CEvent를 받았을시의 처리 함수
 void SensorFusion::OnReceiveCEvent(const deepracer::service::cameradata::proxy::events::CEvent::SampleType& sample)
 {
     m_logger.LogInfo() << "SensorFusion::OnReceiveCEvent:" << sample;
 }
-void SensorFusion::OnReceiveLEvent(const deepracer::service::lidardata::proxy::events::LEevent::SampleType& sample) //LEevent?
+void SensorFusion::OnReceiveLEvent(const deepracer::service::lidardata::proxy::events::LEvent::SampleType& sample) //LEvent?
 {
     m_logger.LogInfo() << "SensorFusion::OnReceiveLEvent:" << sample;
 }

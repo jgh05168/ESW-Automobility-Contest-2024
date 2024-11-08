@@ -10,7 +10,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// GENERATED FILE NAME               : impl_type_sensorfusionnode.h
 /// IMPLEMENTATION DATA TYPE NAME     : SensorFusionNode
-/// GENERATED DATE                    : 2024-10-25 13:47:25
+/// GENERATED DATE                    : 2024-11-07 14:01:17
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///                                                                                                        
 /// CAUTION!! AUTOMATICALLY GENERATED FILE - DO NOT EDIT                                                   
@@ -24,8 +24,8 @@
 /// @uptrace{SWS_CM_00402}
 #include <cstdint>
 #include <ara/core/structure.h>
-#include "deepracer/type/impl_type_lidardatavector.h"
-#include "deepracer/type/impl_type_ucharvector.h"
+#include "deepracer/type/impl_type_cameradatavector.h"
+#include "deepracer/type/impl_type_floatvector.h"
 /// @uptrace{SWS_CM_10375}
 namespace deepracer
 {
@@ -33,8 +33,8 @@ namespace type
 {
 struct SensorFusionNode
 {
-    deepracer::type::UcharVector camera_data;
-    deepracer::type::LidarDataVector lidar_data;
+    deepracer::type::CameraDataVector camera_data;
+    deepracer::type::FloatVector lidar_data;
     std::int64_t timestamp;
     PARA_STRUCTURE(SensorFusionNode, camera_data, lidar_data, timestamp);
 };
