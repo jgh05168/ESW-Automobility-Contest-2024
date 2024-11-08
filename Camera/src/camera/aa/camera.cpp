@@ -14,8 +14,15 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// INCLUSION HEADER FILES
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+#include <vector>
+#include <memory>
+#include <chrono>
+#include <thread>
+#include <mutex>
+#include <opencv2/opencv.hpp>
+
 #include "camera/aa/camera.h"
- 
+
 namespace camera
 {
 namespace aa
@@ -23,7 +30,7 @@ namespace aa
  
 Camera::Camera()
     : m_logger(ara::log::CreateLogger("CAM", "SWC", ara::log::LogLevel::kVerbose))
-    , m_workers(1)
+    , m_workers(2)
 {
 }
  
@@ -33,13 +40,15 @@ Camera::~Camera()
  
 bool Camera::Initialize()
 {
+bool Camera::Initialize() {
     m_logger.LogVerbose() << "Camera::Initialize";
-    
-    bool init{true};
-    
     m_CameraData = std::make_shared<camera::aa::port::CameraData>();
-    
-    return init;
+
+    // 카메라 인덱스 리스트 전달
+    std::vector<int> cameraIdxList = {0, 1};
+    return m_CameraData->scanCameraIndex(cameraIdxList);
+}
+
 }
  
 void Camera::Start()
@@ -63,9 +72,21 @@ void Camera::Run()
 {
     m_logger.LogVerbose() << "Camera::Run";
     
+    // CEvent로 보내줄 데이터 넣기
+    m_workers.Async([this] { m_CameraData->TaskGenerateREventValue();});
     m_workers.Async([this] { m_CameraData->SendEventCEventCyclic(); });
-    
+
+    // 위의 Async로 등록된 함수들이 모두 리턴될 때까지 기다린다.
     m_workers.Wait();
+}
+
+void camera::TaskGenerateREventValue()
+{
+    while (m_running) 
+    {
+        m_CameraData->produceFrames();
+        std::this_thread::sleep_for(std::chrono::seconds(1));  // 1초 대기 후 다음 프레임 캡처
+    }
 }
  
 } /// namespace aa

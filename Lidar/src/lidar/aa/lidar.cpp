@@ -14,6 +14,14 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// INCLUSION HEADER FILES
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+#include <vector>
+#include <memory>
+#include <chrono>
+#include <thread>
+
+#include "sl_lidar.h" 
+#include "sl_lidar_driver.h"
+
 #include "lidar/aa/lidar.h"
  
 namespace lidar
@@ -23,30 +31,54 @@ namespace aa
  
 Lidar::Lidar()
     : m_logger(ara::log::CreateLogger("LID", "SWC", ara::log::LogLevel::kVerbose))
-    , m_workers(1)
+    , m_workers(2)
+    , m_drv(nullptr)
 {
 }
  
 Lidar::~Lidar()
 {
+    // 드라이버 메모리 해제 및 연결 해제
+    if (m_drv) {
+        m_drv->stop();
+        m_drv->setMotorSpeed(0);
+        delete m_drv;
+        m_drv = nullptr;
+    }
 }
  
 bool Lidar::Initialize()
 {
     m_logger.LogVerbose() << "Lidar::Initialize";
+    m_LidarData = std::make_shared<lidar::aa::port::LidarData>();
     
-    bool init{true};
-    
-    m_Lidar = std::make_shared<lidar::aa::port::Lidar>();
-    
-    return init;
+    const char* dev = "/dev/ttyUSB0";
+    unsigned int baudrate = 115200;
+
+    // 드라이버 인스턴스 생성
+    m_drv = *createLidarDriver();
+    if (!m_drv) {
+        m_logger.LogError() << "Insufficient memory for Lidar driver";
+        return false;
+    }
+
+    // 장치 연결
+    IChannel* channel = *createSerialPortChannel(dev, baudrate);
+    auto res = m_drv->connect(channel);
+    if (!SL_IS_OK(res)) {
+        m_logger.LogError() << "Failed to connect to Lidar device";
+        return false;
+    }
+
+    m_drv->setMotorSpeed();
+    return true;  // 초기화 성공 시 true 반환
 }
  
 void Lidar::Start()
 {
-    m_logger.LogVerbose() << "Lidar::Start";
+    m_logger.LogVerbose() << "LidarData::Start";
     
-    m_Lidar->Start();
+    m_LidarData->Start();
     
     // run software component
     Run();
@@ -54,18 +86,36 @@ void Lidar::Start()
  
 void Lidar::Terminate()
 {
-    m_logger.LogVerbose() << "Lidar::Terminate";
+    m_logger.LogVerbose() << "LidarData::Terminate";
     
-    m_Lidar->Terminate();
+    m_LidarData->Terminate();
+
+    // 드라이버 중지 및 정리
+    if (m_drv) {
+        m_drv->stop();
+        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        m_drv->setMotorSpeed(0);
+    }
 }
  
 void Lidar::Run()
 {
-    m_logger.LogVerbose() << "Lidar::Run";
+    m_logger.LogVerbose() << "LidarData::Run";
     
-    m_workers.Async([this] { m_Lidar->SendEventLEeventCyclic(); });
+    // LidarData에서 데이터 캡처 및 전송을 비동기로 호출
+    m_workers.Async([this] { m_LidarData->TaskGenerateLEventValue(); });
+    m_workers.Async([this] { m_LidarData->SendEventLEeventCyclic(); });
     
     m_workers.Wait();
+}
+
+void Lidar::TaskGenerateLEventValue()
+{
+    while (m_running) 
+    {
+        m_LidarData->produceScannig();
+        std::this_thread::sleep_for(std::chrono::seconds(1));  // 1초 대기 후 다음 프레임 캡처
+    }
 }
  
 } /// namespace aa

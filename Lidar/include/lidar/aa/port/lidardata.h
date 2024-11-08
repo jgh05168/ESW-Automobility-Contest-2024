@@ -60,14 +60,14 @@ namespace aa
 namespace port
 {
  
-class Lidar
+class LidarData
 {
 public:
     /// @brief Constructor
-    Lidar();
+    LidarData();
     
     /// @brief Destructor
-    ~Lidar();
+    ~LidarData();
     
     /// @brief Start port
     void Start();

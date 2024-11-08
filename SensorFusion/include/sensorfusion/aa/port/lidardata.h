@@ -61,6 +61,8 @@ public:
     /// @brief Read event data, LEevent
     void ReadDataLEevent(ara::com::SamplePtr<deepracer::service::lidardata::proxy::events::LEevent::SampleType const> samplePtr);
     
+    void SetReceiveEventLEventHandler(
+        std::function<void(const deepracer::service::lidardata::proxy::events::LEvent::SampleType&)> handler);
     
     
 private:
@@ -90,6 +92,9 @@ private:
     
     /// @brief Find service handle
     std::shared_ptr<ara::com::FindServiceHandle> m_findHandle;
+
+     std::function<void(const deepracer::service::lidardata::proxy::events::LEvent::SampleType&)> m_receiveEventLEventHandler;
+
 };
  
 } /// namespace port

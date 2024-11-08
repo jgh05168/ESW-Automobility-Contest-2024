@@ -36,7 +36,10 @@ ara::core::Future<SvFusionDataSkeleton::FMethodOutput> SvFusionDataSkeletonImpl:
     FMethodOutput response;
     ara::core::Promise<FMethodOutput> promise;
     
-    // put your logic
+    response.camera_data[0] = m_CameraData.camera_data0
+    response.camera_data[1] = m_CameraData.camera_data1;
+    response.lidar_data = m_LidarData.Lidar_data;
+    response.timestamp = m_CameraData.timestamp;
     
     promise.set_value(response);
     return promise.get_future();
