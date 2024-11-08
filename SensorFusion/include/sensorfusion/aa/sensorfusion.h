@@ -10,15 +10,15 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// GENERATED FILE NAME               : sensorfusion.h
 /// SOFTWARE COMPONENT NAME           : SensorFusion
-/// GENERATED DATE                    : 2024-10-25 13:47:26
+/// GENERATED DATE                    : 2024-11-07 14:01:17
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 #ifndef PARA_AA_GEN_SOFTWARE_COMPONENT_SENSORFUSION_AA_H
 #define PARA_AA_GEN_SOFTWARE_COMPONENT_SENSORFUSION_AA_H
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// INCLUSION HEADER FILES
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-#include "sensorfusion/aa/port/fusiondata.h"
 #include "sensorfusion/aa/port/cameradata.h"
+#include "sensorfusion/aa/port/fusiondata.h"
 #include "sensorfusion/aa/port/lidardata.h"
  
 #include "para/swc/port_pool.h"
@@ -57,11 +57,11 @@ private:
     /// @brief Logger for software component
     ara::log::Logger& m_logger;
     
-    /// @brief Instance of Port {SensorFusion.FusionData}
-    std::shared_ptr<sensorfusion::aa::port::FusionData> m_FusionData;
-    
     /// @brief Instance of Port {SensorFusion.CameraData}
     std::shared_ptr<sensorfusion::aa::port::CameraData> m_CameraData;
+    
+    /// @brief Instance of Port {SensorFusion.FusionData}
+    std::shared_ptr<sensorfusion::aa::port::FusionData> m_FusionData;
     
     /// @brief Instance of Port {SensorFusion.LidarData}
     std::shared_ptr<sensorfusion::aa::port::LidarData> m_LidarData;

@@ -10,7 +10,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// GENERATED FILE NAME               : lidardata.cpp
 /// SOFTWARE COMPONENT NAME           : LidarData
-/// GENERATED DATE                    : 2024-10-25 13:47:26
+/// GENERATED DATE                    : 2024-11-07 14:01:17
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 #include "sensorfusion/aa/port/lidardata.h"
  
@@ -69,7 +69,7 @@ void LidarData::Terminate()
     if (m_interface)
     {
         // stop subscribe
-        StopSubscribeLEevent();
+        StopSubscribeLEvent();
         
         // stop find service
         m_interface->StopFindService(*m_findHandle);
@@ -114,105 +114,105 @@ void LidarData::Find(ara::com::ServiceHandleContainer<deepracer::service::lidard
         m_found = true;
         
         // subscribe events
-        SubscribeLEevent();
+        SubscribeLEvent();
     }
 }
  
-void LidarData::SubscribeLEevent()
+void LidarData::SubscribeLEvent()
 {
     if (m_found)
     {
         // regist receiver handler
         // if you want to enable it, please uncomment below code
         // 
-        // RegistReceiverLEevent();
+        // RegistReceiverLEvent();
         
         // request subscribe
-        auto subscribe = m_interface->LEevent.Subscribe(1);
+        auto subscribe = m_interface->LEvent.Subscribe(1);
         if (subscribe.HasValue())
         {
-            m_logger.LogVerbose() << "LidarData::SubscribeLEevent::Subscribed";
+            m_logger.LogVerbose() << "LidarData::SubscribeLEvent::Subscribed";
         }
         else
         {
-            m_logger.LogError() << "LidarData::SubscribeLEevent::" << subscribe.Error().Message();
+            m_logger.LogError() << "LidarData::SubscribeLEvent::" << subscribe.Error().Message();
         }
     }
 }
  
-void LidarData::StopSubscribeLEevent()
+void LidarData::StopSubscribeLEvent()
 {
     if (m_found)
     {
         // request stop subscribe
-        m_interface->LEevent.Unsubscribe();
-        m_logger.LogVerbose() << "LidarData::StopSubscribeLEevent::Unsubscribed";
+        m_interface->LEvent.Unsubscribe();
+        m_logger.LogVerbose() << "LidarData::StopSubscribeLEvent::Unsubscribed";
     }
 }
  
-void LidarData::RegistReceiverLEevent()
+void LidarData::RegistReceiverLEvent()
 {
     if (m_found)
     {
         // set callback
         auto receiver = [this]() -> void {
-            return ReceiveEventLEeventTriggered();
+            return ReceiveEventLEventTriggered();
         };
         
         // regist callback
-        auto callback = m_interface->LEevent.SetReceiveHandler(receiver);
+        auto callback = m_interface->LEvent.SetReceiveHandler(receiver);
         if (callback.HasValue())
         {
-            m_logger.LogVerbose() << "LidarData::RegistReceiverLEevent::SetReceiveHandler";
+            m_logger.LogVerbose() << "LidarData::RegistReceiverLEvent::SetReceiveHandler";
         }
         else
         {
-            m_logger.LogError() << "LidarData::RegistReceiverLEevent::SetReceiveHandler::" << callback.Error().Message();
+            m_logger.LogError() << "LidarData::RegistReceiverLEvent::SetReceiveHandler::" << callback.Error().Message();
         }
     }
 }
  
-void LidarData::ReceiveEventLEeventTriggered()
+void LidarData::ReceiveEventLEventTriggered()
 {
     if (m_found)
     {
         std::lock_guard<std::mutex> lock(m_mutex);
-        if (m_interface->LEevent.GetSubscriptionState() == ara::com::SubscriptionState::kSubscribed)
+        if (m_interface->LEvent.GetSubscriptionState() == ara::com::SubscriptionState::kSubscribed)
         {
-            auto recv = std::make_unique<ara::core::Result<size_t>>(m_interface->LEevent.GetNewSamples([&](auto samplePtr) {
-                LidarData::ReadDataLEevent(std::move(samplePtr));
+            auto recv = std::make_unique<ara::core::Result<size_t>>(m_interface->LEvent.GetNewSamples([&](auto samplePtr) {
+                LidarData::ReadDataLEvent(std::move(samplePtr));
             }));
             if (recv->HasValue())
             {
-                m_logger.LogVerbose() << "LidarData::ReceiveEventLEevent::GetNewSamples::" << recv->Value();
+                m_logger.LogVerbose() << "LidarData::ReceiveEventLEvent::GetNewSamples::" << recv->Value();
             }
             else
             {
-                m_logger.LogError() << "LidarData::ReceiveEventLEevent::GetNewSamples::" << recv->Error().Message();
+                m_logger.LogError() << "LidarData::ReceiveEventLEvent::GetNewSamples::" << recv->Error().Message();
             }
         }
     }
 }
  
-void LidarData::ReceiveEventLEeventCyclic()
+void LidarData::ReceiveEventLEventCyclic()
 {
     while (m_running)
     {
         std::lock_guard<std::mutex> lock(m_mutex);
         if (m_found)
         {
-            if (m_interface->LEevent.GetSubscriptionState() == ara::com::SubscriptionState::kSubscribed)
+            if (m_interface->LEvent.GetSubscriptionState() == ara::com::SubscriptionState::kSubscribed)
             {
-                auto recv = std::make_unique<ara::core::Result<size_t>>(m_interface->LEevent.GetNewSamples([&](auto samplePtr) {
-                    LidarData::ReadDataLEevent(std::move(samplePtr));
+                auto recv = std::make_unique<ara::core::Result<size_t>>(m_interface->LEvent.GetNewSamples([&](auto samplePtr) {
+                    LidarData::ReadDataLEvent(std::move(samplePtr));
                 }));
                 if (recv->HasValue())
                 {
-                    m_logger.LogVerbose() << "LidarData::ReceiveEventLEevent::GetNewSamples::" << recv->Value();
+                    m_logger.LogVerbose() << "LidarData::ReceiveEventLEvent::GetNewSamples::" << recv->Value();
                 }
                 else
                 {
-                    m_logger.LogError() << "LidarData::ReceiveEventLEevent::GetNewSamples::" << recv->Error().Message();
+                    m_logger.LogError() << "LidarData::ReceiveEventLEvent::GetNewSamples::" << recv->Error().Message();
                 }
             }
         }
@@ -220,11 +220,11 @@ void LidarData::ReceiveEventLEeventCyclic()
     }
 }
  
-void LidarData::ReadDataLEevent(ara::com::SamplePtr<deepracer::service::lidardata::proxy::events::LEevent::SampleType const> samplePtr)
+void LidarData::ReadDataLEvent(ara::com::SamplePtr<deepracer::service::lidardata::proxy::events::LEvent::SampleType const> samplePtr)
 {
     auto data = *samplePtr.Get();
 
-    m_logger.LogVerbose() << "LidarData::ReadDataLEevent::" << data;
+    m_logger.LogVerbose() << "LidarData::ReadDataLevent::" << data;
 
     //CEvent 핸들러가 등록되어 있다면 해당 핸들러는 값과 함께 호출됨
     if(m_receiveEventLEventHandler != nullptr)

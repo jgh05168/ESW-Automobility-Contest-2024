@@ -10,7 +10,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// GENERATED FILE NAME               : svlidardata_proxy.h
 /// SERVICE INTERFACE NAME            : SvLidarData
-/// GENERATED DATE                    : 2024-10-25 13:47:25
+/// GENERATED DATE                    : 2024-11-07 14:01:17
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///                                                                                                        
 /// CAUTION!! AUTOMATICALLY GENERATED FILE - DO NOT EDIT                                                   
@@ -38,24 +38,24 @@ namespace proxy
 namespace events
 {
 /// @uptrace{SWS_CM_00003}
-class LEevent
+class LEvent
 {
 public:
     /// @brief Type alias for type of event data
     /// @uptrace{SWS_CM_00162, SWS_CM_90437}
     using SampleType = deepracer::type::LidarDataNode;
     /// @brief Constructor
-    explicit LEevent(para::com::ProxyInterface* interface) : mInterface(interface)
+    explicit LEvent(para::com::ProxyInterface* interface) : mInterface(interface)
     {
     }
     /// @brief Destructor
-    virtual ~LEevent() = default;
+    virtual ~LEvent() = default;
     /// @brief Delete copy constructor
-    LEevent(const LEevent& other) = delete;
+    LEvent(const LEvent& other) = delete;
     /// @brief Delete copy assignment
-    LEevent& operator=(const LEevent& other) = delete;
+    LEvent& operator=(const LEvent& other) = delete;
     /// @brief Move constructor
-    LEevent(LEevent&& other) noexcept : mInterface(other.mInterface)
+    LEvent(LEvent&& other) noexcept : mInterface(other.mInterface)
     {
         mMaxSampleCount = other.mMaxSampleCount;
         mEventReceiveHandler = other.mEventReceiveHandler;
@@ -64,7 +64,7 @@ public:
         mInterface->SetSubscriptionStateChangeHandler(kCallSign, mSubscriptionStateChangeHandler);
     }
     /// @brief Move assignment
-    LEevent& operator=(LEevent&& other) noexcept
+    LEvent& operator=(LEvent&& other) noexcept
     {
         mInterface = other.mInterface;
         mMaxSampleCount = other.mMaxSampleCount;
@@ -168,7 +168,7 @@ private:
     size_t mMaxSampleCount{0};
     ara::com::EventReceiveHandler mEventReceiveHandler{nullptr};
     ara::com::SubscriptionStateChangeHandler mSubscriptionStateChangeHandler{nullptr};
-    const std::string kCallSign = {"LEevent"};
+    const std::string kCallSign = {"LEvent"};
 };
 } /// namespace events
 /// @uptrace{SWS_CM_01031}
@@ -262,7 +262,7 @@ public:
     explicit SvLidarDataProxy(HandleType& handle)
         : mHandle(handle)
         , mInterface(std::make_unique<para::com::ProxyInterface>(handle.GetInstanceSpecifier(), handle.GetServiceHandle()))
-        , LEevent(mInterface.get())
+        , LEvent(mInterface.get())
     {
     }
     /// @brief Destructor
@@ -279,7 +279,7 @@ public:
     SvLidarDataProxy(SvLidarDataProxy&& other) noexcept
         : mHandle(std::move(other.mHandle))
         , mInterface(std::move(other.mInterface))
-        , LEevent(std::move(other.LEevent))
+        , LEvent(std::move(other.LEvent))
     {
         mInterface->StopFindService();
         other.mInterface.reset();
@@ -291,7 +291,7 @@ public:
         mHandle = std::move(other.mHandle);
         mInterface = std::move(other.mInterface);
         mInterface->StopFindService();
-        LEevent = std::move(other.LEevent);
+        LEvent = std::move(other.LEvent);
         other.mInterface.reset();
         return *this;
     }
@@ -313,8 +313,8 @@ private:
     std::unique_ptr<para::com::ProxyInterface> mInterface;
     
 public:
-    /// @brief - event, LEevent
-    events::LEevent LEevent;
+    /// @brief - event, LEvent
+    events::LEvent LEvent;
 };
 } /// namespace proxy
 } /// namespace lidardata
