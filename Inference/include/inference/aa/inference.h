@@ -10,7 +10,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// GENERATED FILE NAME               : inference.h
 /// SOFTWARE COMPONENT NAME           : Inference
-/// GENERATED DATE                    : 2024-10-25 13:47:26
+/// GENERATED DATE                    : 2024-11-07 14:01:17
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 #ifndef PARA_AA_GEN_SOFTWARE_COMPONENT_INFERENCE_AA_H
 #define PARA_AA_GEN_SOFTWARE_COMPONENT_INFERENCE_AA_H
@@ -18,10 +18,7 @@
 /// INCLUSION HEADER FILES
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 #include "inference/aa/port/fusiondata.h"
-#include "inference/aa/port/simulatordata.h"
 #include "inference/aa/port/inferencedata.h"
-
-#include "inference/aa/intel_inference_eng.hpp"
  
 #include "para/swc/port_pool.h"
  
@@ -51,10 +48,6 @@ public:
 private:
     /// @brief Run software component
     void Run();
-
-    void TaskRequestFMethod();
-
-    void OnReceiveFMethod(const deepracer::service::fusiondata::proxy::methods::FMethod::Output& output);
  
 private:
     /// @brief Pool of port
@@ -66,14 +59,8 @@ private:
     /// @brief Instance of Port {Inference.FusionData}
     std::shared_ptr<inference::aa::port::FusionData> m_FusionData;
     
-    /// @brief Instance of Port {Inference.SimulatorData}
-    std::shared_ptr<inference::aa::port::SimulatorData> m_SimulatorData;
-    
     /// @brief Instance of Port {Inference.InferenceData}
     std::shared_ptr<inference::aa::port::InferenceData> m_InferenceData;
-
-    /// @brief Inference를 위한 각종 무언가 
-    std::shared_ptr<inference::aa::IntelInferenceEngine::RLInferenceModel> m_Inference;
 };
  
 } /// namespace aa

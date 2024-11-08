@@ -10,7 +10,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// GENERATED FILE NAME               : fusiondata.cpp
 /// SOFTWARE COMPONENT NAME           : FusionData
-/// GENERATED DATE                    : 2024-10-25 13:47:26
+/// GENERATED DATE                    : 2024-11-07 14:01:17
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 #include "inference/aa/port/fusiondata.h"
  
@@ -44,7 +44,7 @@ void FusionData::Start()
         this->Find(handles, findHandle);
     };
     
-    // find service : Find Service 호출
+    // find service
     auto find = deepracer::service::fusiondata::proxy::SvFusionDataProxy::StartFindService(handler, specifier);
     if (find.HasValue())
     {
@@ -69,7 +69,8 @@ void FusionData::Terminate()
     
     // clear service proxy
     if (m_interface)
-    {   
+        // method는 R-R이기 때문에 Stop Sub 할 필요가 없다.
+    {
         // method는 R-R이기 때문에 Stop Sub 할 필요가 없다.
         
         // stop find service
@@ -80,6 +81,9 @@ void FusionData::Terminate()
     }
 }
 
+
+// Find Service에 대한 핸들러 함수
+ 
 // Find Service에 대한 핸들러 함수
 void FusionData::Find(ara::com::ServiceHandleContainer<deepracer::service::fusiondata::proxy::SvFusionDataProxy::HandleType> handles, ara::com::FindServiceHandle findHandle)
 {
@@ -123,14 +127,12 @@ void FusionData::Find(ara::com::ServiceHandleContainer<deepracer::service::fusio
         // 여기 // 
     }
 }
-
-
-// FMethod 처리에 대한 Request 및 Result 처리 함수
-void FusionData::RequestFMethod(const deepracer::type::SensorFusionNode& sensorfusion)
+ 
+void FusionData::RequestFMethod()
 {
     if (m_found)
     {
-        auto request = m_interface->FMethod(sensorfusion);
+        auto request = m_interface->FMethod();
         request.wait();
         auto response = request.GetResult();
         if (response.HasValue())

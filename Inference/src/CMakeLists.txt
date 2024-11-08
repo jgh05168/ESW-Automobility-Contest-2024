@@ -26,7 +26,6 @@ target_link_libraries(${PARA_APP_NAME}
 target_sources(${PARA_APP_NAME}
                PRIVATE
                inference/aa/port/fusiondata.cpp
-               inference/aa/port/simulatordata.cpp
                inference/aa/port/inferencedata.cpp
                inference/aa/inference.cpp
                main.cpp
