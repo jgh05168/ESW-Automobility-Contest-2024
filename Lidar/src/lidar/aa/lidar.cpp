@@ -23,7 +23,7 @@
 #include "sl_lidar_driver.h"
 
 #include "lidar/aa/lidar.h"
- 
+  
 namespace lidar
 {
 namespace aa
@@ -76,7 +76,7 @@ bool Lidar::Initialize()
  
 void Lidar::Start()
 {
-    m_logger.LogVerbose() << "LidarData::Start";
+    m_logger.LogVerbose() << "Lidar::Start";
     
     m_LidarData->Start();
     
@@ -86,7 +86,7 @@ void Lidar::Start()
  
 void Lidar::Terminate()
 {
-    m_logger.LogVerbose() << "LidarData::Terminate";
+    m_logger.LogVerbose() << "Lidar::Terminate";
     
     m_LidarData->Terminate();
 
@@ -100,11 +100,11 @@ void Lidar::Terminate()
  
 void Lidar::Run()
 {
-    m_logger.LogVerbose() << "LidarData::Run";
+    m_logger.LogVerbose() << "Lidar::Run";
     
     // LidarData에서 데이터 캡처 및 전송을 비동기로 호출
     m_workers.Async([this] { m_LidarData->TaskGenerateLEventValue(); });
-    m_workers.Async([this] { m_LidarData->SendEventLEeventCyclic(); });
+    m_workers.Async([this] { m_LidarData->SendEventLEventCyclic(); });
     
     m_workers.Wait();
 }

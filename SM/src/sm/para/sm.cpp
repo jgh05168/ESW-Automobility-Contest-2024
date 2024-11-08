@@ -10,7 +10,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// GENERATED FILE NAME               : sm.cpp
 /// SOFTWARE COMPONENT NAME           : SM
-/// GENERATED DATE                    : 2024-10-25 13:47:26
+/// GENERATED DATE                    : 2024-11-07 14:01:17
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// INCLUSION HEADER FILES
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -23,7 +23,7 @@ namespace para
  
 SM::SM()
     : m_logger(ara::log::CreateLogger("SM", "SWC", ara::log::LogLevel::kVerbose))
-    , m_workers(2)
+    , m_workers(1)
 {
 }
  
@@ -38,7 +38,6 @@ bool SM::Initialize()
     bool init{true};
     
     m_MachineFG = std::make_shared<sm::para::port::MachineFG>();
-    m_DeepRacerFG = std::make_shared<sm::para::port::DeepRacerFG>();
     
     return init;
 }
@@ -48,7 +47,6 @@ void SM::Start()
     m_logger.LogVerbose() << "SM::Start";
     
     m_MachineFG->Start();
-    m_DeepRacerFG->Start();
     
     // run software component
     Run();
@@ -59,7 +57,6 @@ void SM::Terminate()
     m_logger.LogVerbose() << "SM::Terminate";
     
     m_MachineFG->Terminate();
-    m_DeepRacerFG->Terminate();
 }
  
 void SM::Run()
@@ -67,7 +64,6 @@ void SM::Run()
     m_logger.LogVerbose() << "SM::Run";
     
     m_workers.Async([this] { m_MachineFG->NotifyMachineFGCyclic(); });
-    m_workers.Async([this] { m_DeepRacerFG->NotifyDeepracerFGCyclic(); });
     
     m_workers.Wait();
 }

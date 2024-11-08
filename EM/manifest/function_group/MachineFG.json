@@ -11,16 +11,16 @@
             "meta-model-identifier" : "MachineFG/Off"
         },
         {
-            "state" : "Startup",
-            "meta-model-identifier" : "MachineFG/Startup"
+            "state" : "Restart",
+            "meta-model-identifier" : "MachineFG/Restart"
         },
         {
             "state" : "Shutdown",
             "meta-model-identifier" : "MachineFG/Shutdown"
         },
         {
-            "state" : "Restart",
-            "meta-model-identifier" : "MachineFG/Restart"
+            "state" : "Startup",
+            "meta-model-identifier" : "MachineFG/Startup"
         },
         {
             "state" : "Verify",

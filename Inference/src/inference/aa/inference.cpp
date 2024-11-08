@@ -10,7 +10,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// GENERATED FILE NAME               : inference.cpp
 /// SOFTWARE COMPONENT NAME           : Inference
-/// GENERATED DATE                    : 2024-10-25 13:47:26
+/// GENERATED DATE                    : 2024-11-07 14:01:17
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// INCLUSION HEADER FILES
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -344,8 +344,6 @@ bool Inference::Initialize()
 
     // fusion PPort data
     m_FusionData = std::make_shared<inference::aa::port::FusionData>();
-    // simulator PPort data
-    m_SimulatorData = std::make_shared<inference::aa::port::SimulatorData>();
     // inference RPort data
     m_InferenceData = std::make_shared<inference::aa::port::InferenceData>();
     
@@ -359,7 +357,6 @@ void Inference::Start()
     m_logger.LogVerbose() << "Inference::Start";
     
     m_FusionData->Start();
-    m_SimulatorData->Start();
     m_InferenceData->Start();
     
     // run software component
@@ -372,7 +369,6 @@ void Inference::Terminate()
     m_logger.LogVerbose() << "Inference::Terminate";
     
     m_FusionData->Terminate();
-    m_SimulatorData->Terminate();
     m_InferenceData->Terminate();
 }
 
