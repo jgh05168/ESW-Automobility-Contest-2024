@@ -24,11 +24,15 @@
     },
     "state-dependencies" : [
         {
-            "function-group" : "DeepRacerFG",
-            "state" : "Device"
+            "function-group" : "MachineFG",
+            "state" : "Startup"
         }
     ],
     "execution-dependencies" : [
+        {
+            "dependent-process" : "CM",
+            "state" : "Running"
+        }
     ],
     "log-trace-configuration" : {
     	"default-log-level" : "verbose",
