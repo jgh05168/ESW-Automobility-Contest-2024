@@ -10,7 +10,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// GENERATED FILE NAME               : camera.h
 /// SOFTWARE COMPONENT NAME           : Camera
-/// GENERATED DATE                    : 2024-10-25 13:47:26
+/// GENERATED DATE                    : 2024-11-07 14:01:17
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 #ifndef PARA_AA_GEN_SOFTWARE_COMPONENT_CAMERA_AA_H
 #define PARA_AA_GEN_SOFTWARE_COMPONENT_CAMERA_AA_H
