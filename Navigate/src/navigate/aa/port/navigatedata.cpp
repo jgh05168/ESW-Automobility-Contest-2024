@@ -10,7 +10,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// GENERATED FILE NAME               : navigatedata.cpp
 /// SOFTWARE COMPONENT NAME           : NavigateData
-/// GENERATED DATE                    : 2024-10-25 13:47:26
+/// GENERATED DATE                    : 2024-11-07 14:01:17
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 #include "navigate/aa/port/navigatedata.h"
  
@@ -140,7 +140,7 @@ void NavigateData::SendEventNEventTriggered(const deepracer::service::navigateda
         m_logger.LogError() << "NavigateData::SendEventNEventTriggered::Send::" << send.Error().Message();
     }
 }
-
+ 
 } /// namespace port
 } /// namespace aa
 } /// namespace navigate
