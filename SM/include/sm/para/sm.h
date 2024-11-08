@@ -10,7 +10,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// GENERATED FILE NAME               : sm.h
 /// SOFTWARE COMPONENT NAME           : SM
-/// GENERATED DATE                    : 2024-10-25 13:47:26
+/// GENERATED DATE                    : 2024-11-07 14:01:17
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 #ifndef PARA_AA_GEN_SOFTWARE_COMPONENT_SM_PARA_H
 #define PARA_AA_GEN_SOFTWARE_COMPONENT_SM_PARA_H
@@ -18,7 +18,6 @@
 /// INCLUSION HEADER FILES
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 #include "sm/para/port/machinefg.h"
-#include "sm/para/port/deepracerfg.h"
  
 #include "para/swc/port_pool.h"
  
@@ -58,9 +57,6 @@ private:
     
     /// @brief Instance of Port {SM.MachineFG}
     std::shared_ptr<sm::para::port::MachineFG> m_MachineFG;
-    
-    /// @brief Instance of Port {SM.DeepRacerFG}
-    std::shared_ptr<sm::para::port::DeepRacerFG> m_DeepRacerFG;
 };
  
 } /// namespace para
