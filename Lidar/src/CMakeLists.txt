@@ -25,7 +25,7 @@ target_link_libraries(${PARA_APP_NAME}
 # ============================================================================
 target_sources(${PARA_APP_NAME}
                PRIVATE
-               lidar/aa/port/lidar.cpp
+               lidar/aa/port/lidardata.cpp
                lidar/aa/lidar.cpp
                main.cpp
 )
