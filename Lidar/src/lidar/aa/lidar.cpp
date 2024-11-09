@@ -18,11 +18,18 @@
 #include <memory>
 #include <chrono>
 #include <thread>
+#include <stdio.h>
+#include <stdlib.h>
+#include <signal.h>
+#include <string.h>
+#include <unistd.h>
 
 #include "sl_lidar.h" 
 #include "sl_lidar_driver.h"
 
 #include "lidar/aa/lidar.h"
+
+using namespace sl;
   
 namespace lidar
 {
@@ -32,19 +39,19 @@ namespace aa
 Lidar::Lidar()
     : m_logger(ara::log::CreateLogger("LID", "SWC", ara::log::LogLevel::kVerbose))
     , m_workers(2)
-    , m_drv(nullptr)
+    , drv(nullptr)
 {
 }
  
 Lidar::~Lidar()
 {
-    // 드라이버 메모리 해제 및 연결 해제
-    if (m_drv) {
-        m_drv->stop();
-        m_drv->setMotorSpeed(0);
-        delete m_drv;
-        m_drv = nullptr;
-    }
+    // // 드라이버 메모리 해제 및 연결 해제
+    // if (m_drv) {
+    //     m_drv->stop();
+    //     m_drv->setMotorSpeed(0);
+    //     delete m_drv;
+    //     m_drv = nullptr;
+    // }
 }
  
 bool Lidar::Initialize()
@@ -53,24 +60,23 @@ bool Lidar::Initialize()
     m_LidarData = std::make_shared<lidar::aa::port::LidarData>();
     
     const char* dev = "/dev/ttyUSB0";
-    unsigned int baudrate = 115200;
-
+    uint32_t baudrate = 115200;
     // 드라이버 인스턴스 생성
-    m_drv = *createLidarDriver();
-    if (!m_drv) {
+    ILidarDriver * drv = *createLidarDriver();
+    if (!drv) {
         m_logger.LogError() << "Insufficient memory for Lidar driver";
         return false;
     }
-
     // 장치 연결
     IChannel* channel = *createSerialPortChannel(dev, baudrate);
-    auto res = m_drv->connect(channel);
+    auto res = drv->connect(channel);
     if (!SL_IS_OK(res)) {
         m_logger.LogError() << "Failed to connect to Lidar device";
         return false;
     }
-
-    m_drv->setMotorSpeed();
+    // 스캔 시작
+    drv->setMotorSpeed();
+    drv->startScan(0,1);
     return true;  // 초기화 성공 시 true 반환
 }
  
@@ -91,10 +97,12 @@ void Lidar::Terminate()
     m_LidarData->Terminate();
 
     // 드라이버 중지 및 정리
-    if (m_drv) {
-        m_drv->stop();
+    if (drv) {
+        drv->stop();
         std::this_thread::sleep_for(std::chrono::milliseconds(200));
         m_drv->setMotorSpeed(0);
+        delete drv;
+        drv = NULL;
     }
 }
  

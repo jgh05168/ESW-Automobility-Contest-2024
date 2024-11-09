@@ -12,6 +12,15 @@
 /// SOFTWARE COMPONENT NAME           : LidarData
 /// GENERATED DATE                    : 2024-11-07 14:01:17
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+#include <stdio.h>
+#include <stdlib.h>
+#include <signal.h>
+#include <string.h>
+#include <unistd.h>
+
+#include "sl_lidar.h" 
+#include "sl_lidar_driver.h"
+
 #include "lidar/aa/port/lidardata.h"
  
 using namespace sl;
@@ -89,34 +98,65 @@ void LidarData::Terminate()
 }
  
 void LidarData::produceScanning() {
-    if (!m_drv) {
-        m_logger.LogError() << "Lidar driver is not initialized.";
-        return;
+    // 드라이버 인스턴스 생성
+	ILidarDriver * drv = *createLidarDriver();
+    // scan data 및 존별 최소 거리 초기화
+    deepracer::service::lidardata::skeleton::events::LEevent::SampleType& scan_data;
+    for (size_t i = 0; i < 8; i++) {
+        scan_data[i].distance = 9999;
     }
+    while (1) {
+        sl_lidar_response_measurement_node_hq_t nodes[8192];
+        size_t count = sizeof(nodes) / sizeof(sl_lidar_response_measurement_node_hq_t);
 
-    deepracer::service::lidardata::skeleton::events::LEvent::SampleType& scan_data;
+        // 데이터 캡처
+        auto op_result = drv->grabScanDataHq(nodes, count);
 
-    sl_lidar_response_measurement_node_hq_t nodes[8192];
-    size_t count = sizeof(nodes) / sizeof(sl_lidar_response_measurement_node_hq_t);
+        if (SL_IS_OK(op_result)) {
+            drv->ascendScanData(nodes, count);
 
-    // 데이터 캡처
-    auto op_result = m_drv->grabScanDataHq(nodes, count);
+            for (size_t pos = 0; pos < (uint32_t)count; ++pos) {
+                //앵글 센싱
+                float theta = (nodes[pos].angle_z_q14 * 90.f) / 16384.f;
+                // 각도에 따른 존 할당
+                uint32_t zone;
+                if (theta >= 40.0 && theta < 75.0) {
+                    zone = 0; // 존1
+                } else if (theta >= 75.0 && theta < 110.0) {
+                    zone = 1; // 존2
+                } else if (theta >= 110.0 && theta < 145.0) {
+                    zone = 2; // 존3
+                } else if (theta >= 145.0 && theta < 180.0) {
+                    zone = 3; // 존4
+                } else if (theta >= 180.0 && theta < 215.0) {
+                    zone = 4; // 존5
+                } else if (theta >= 215.0 && theta < 250.0) {
+                    zone = 5; // 존6
+                } else if (theta >= 250.0 && theta < 285.0) {
+                    zone = 6; // 존7
+                } else if (theta >= 285.0 && theta < 320.0) {
+                    zone = 7; // 존8
+                } else {
+                    continue; // 범위 밖 데이터 무시
+                }
 
-    if (SL_IS_OK(op_result)) {
-        m_drv->ascendScanData(nodes, count);
-
-        for (size_t pos = 0; pos < (int)count; ++pos) {
-            // 캡처한 데이터를 scan_data에 저장
-            scan_data.scans[pos].distance = nodes[pos].dist_mm_q2 / 4.0f;
-            scan_data.scans[pos].angle = (nodes[pos].angle_z_q14 * 90.f) / 16384.f;
-            scan_data.scans[pos].qual = nodes[pos].quality >> SL_LIDAR_RESP_MEASUREMENT_QUALITY_SHIFT;
+                // 거리 센싱
+                float dist = nodes[pos].dist_mm_q2 / 4.0f;
+                if (dist == 0) continue; // 거리가 0인 데이터는 무시
+                
+                // 해당 존에 최소 거리 업데이트
+                if (dist < scan_data[zone].distance) {
+                    scan_data[zone].distance = dist;
+                }
+            } 
         }
-
+        // m_LEeventData에 업데이트
         scan_data.timestamp = getCurrentTimestamp();
-        
-        WriteDataLEvent(scan_data);
-    } else {
-        m_logger.LogError() << "Failed to grab scan data from Lidar.";
+        WriteDataLEevent(scan_data);
+        // SL_IS_OK가 아니라면 에러로그
+        else {
+            m_logger.LogError() << "Failed to grab scan data from Lidar.";
+        }
     }
 }
 
