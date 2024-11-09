@@ -43,6 +43,8 @@ public:
     
     /// @brief Terminate software component
     void Terminate();
+
+    void TaskGenerateREventValue();
  
 private:
     /// @brief Run software component

@@ -38,8 +38,6 @@ Camera::~Camera()
 {
 }
  
-bool Camera::Initialize()
-{
 bool Camera::Initialize() {
     m_logger.LogVerbose() << "Camera::Initialize";
     m_CameraData = std::make_shared<camera::aa::port::CameraData>();
@@ -47,8 +45,6 @@ bool Camera::Initialize() {
     // 카메라 인덱스 리스트 전달
     std::vector<int> cameraIdxList = {0, 1};
     return m_CameraData->scanCameraIndex(cameraIdxList);
-}
-
 }
  
 void Camera::Start()
@@ -73,14 +69,14 @@ void Camera::Run()
     m_logger.LogVerbose() << "Camera::Run";
     
     // CEvent로 보내줄 데이터 넣기
-    m_workers.Async([this] { m_CameraData->TaskGenerateREventValue();});
+    m_workers.Async([this] { TaskGenerateREventValue();});
     m_workers.Async([this] { m_CameraData->SendEventCEventCyclic(); });
 
     // 위의 Async로 등록된 함수들이 모두 리턴될 때까지 기다린다.
     m_workers.Wait();
 }
 
-void camera::TaskGenerateREventValue()
+void Camera::TaskGenerateREventValue()
 {
     while (m_running) 
     {

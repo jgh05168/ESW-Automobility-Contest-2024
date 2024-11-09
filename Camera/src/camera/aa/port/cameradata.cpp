@@ -95,7 +95,7 @@ void CameraData::Terminate()
 
 /*==================================================*/
 // 카메라 찾기
-bool Camera::scanCameraIndex(const std::vector<int32_t>& cameraIdxList) {
+bool CameraData::scanCameraIndex(const std::vector<int32_t>& cameraIdxList) {
     for (auto idx : cameraIdxList) {
         m_logger.LogVerbose() << "스캔 중: 카메라 인덱스 " << idx;
 
