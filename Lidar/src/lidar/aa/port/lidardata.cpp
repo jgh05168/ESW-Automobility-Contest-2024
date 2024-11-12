@@ -101,7 +101,7 @@ void LidarData::produceScanning() {
     // 드라이버 인스턴스 생성
 	ILidarDriver * drv = *createLidarDriver();
     // scan data 및 존별 최소 거리 초기화
-    deepracer::service::lidardata::skeleton::events::LEevent::SampleType& scan_data;
+    deepracer::service::lidardata::skeleton::events::LEvent::SampleType& scan_data;
     for (size_t i = 0; i < 8; i++) {
         scan_data[i].distance = 9999;
     }
@@ -150,11 +150,11 @@ void LidarData::produceScanning() {
                 }
             } 
         }
-        // m_LEeventData에 업데이트
+        // m_LEventData에 업데이트
         scan_data.timestamp = getCurrentTimestamp();
-        WriteDataLEevent(scan_data);
+        WriteDataLEvent(scan_data);
         // SL_IS_OK가 아니라면 에러로그
-        else {
+        if (!SL_IS_OK(op_result)){
             m_logger.LogError() << "Failed to grab scan data from Lidar.";
         }
     }
