@@ -20,6 +20,7 @@
 #include "deepracer/service/lidardata/svlidardata_skeleton.h"
  
 #include "ara/log/logger.h"
+#include "sl_lidar.h" 
  
 #include <mutex>
 #include <thread>

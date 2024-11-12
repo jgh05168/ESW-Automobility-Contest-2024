@@ -101,10 +101,8 @@ void LidarData::produceScanning() {
     // 드라이버 인스턴스 생성
 	ILidarDriver * drv = *createLidarDriver();
     // scan data 및 존별 최소 거리 초기화
-    deepracer::service::lidardata::skeleton::events::LEvent::SampleType& scan_data;
-    for (size_t i = 0; i < 8; i++) {
-        scan_data[i].distance = 9999;
-    }
+    deepracer::service::lidardata::skeleton::events::LEvent::SampleType scan_data;
+    scan_data.lidar_data = {9999.0f, 9999.0f, 9999.0f, 9999.0f, 9999.0f, 9999.0f, 9999.0f, 9999.0f};
     while (1) {
         sl_lidar_response_measurement_node_hq_t nodes[8192];
         size_t count = sizeof(nodes) / sizeof(sl_lidar_response_measurement_node_hq_t);
@@ -145,8 +143,8 @@ void LidarData::produceScanning() {
                 if (dist == 0) continue; // 거리가 0인 데이터는 무시
                 
                 // 해당 존에 최소 거리 업데이트
-                if (dist < scan_data[zone].distance) {
-                    scan_data[zone].distance = dist;
+                if (dist < scan_data.lidar_data[zone]) {
+                    scan_data.lidar_data[zone] = dist;
                 }
             } 
         }

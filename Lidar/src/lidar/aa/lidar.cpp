@@ -39,19 +39,11 @@ namespace aa
 Lidar::Lidar()
     : m_logger(ara::log::CreateLogger("LID", "SWC", ara::log::LogLevel::kVerbose))
     , m_workers(2)
-    , drv(nullptr) {}
 {
 }
  
 Lidar::~Lidar()
 {
-    // // 드라이버 메모리 해제 및 연결 해제
-    // if (m_drv) {
-    //     m_drv->stop();
-    //     m_drv->setMotorSpeed(0);
-    //     delete m_drv;
-    //     m_drv = nullptr;
-    // }
 }
  
 bool Lidar::Initialize()
@@ -74,9 +66,7 @@ bool Lidar::Initialize()
         m_logger.LogError() << "Failed to connect to Lidar device";
         return false;
     }
-    // 스캔 시작
-    drv->setMotorSpeed();
-    drv->startScan(0,1);
+
     return true;  // 초기화 성공 시 true 반환
 }
  
@@ -101,8 +91,7 @@ void Lidar::Terminate()
         drv->stop();
         std::this_thread::sleep_for(std::chrono::milliseconds(200));
         drv->setMotorSpeed(0);
-        delete drv;
-        drv = NULL;
+        drv.reset();  // shared_ptr로 메모리 해제
     }
 }
  
