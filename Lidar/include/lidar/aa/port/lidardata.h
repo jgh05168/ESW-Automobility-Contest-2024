@@ -105,6 +105,8 @@ private:
     
     /// @brief Data for event, LEvent
     deepracer::service::lidardata::skeleton::events::LEvent::SampleType m_LEventData;
+
+    std::shared_ptr<sl::ILidarDriver> drv;
 };
  
 } /// namespace port
