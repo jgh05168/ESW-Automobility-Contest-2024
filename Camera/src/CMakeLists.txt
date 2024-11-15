@@ -15,13 +15,17 @@ Para_Target(${PARA_APP_NAME}
             OUTPUT_NAME ${PARA_APP_NAME}
 )
 # ============================================================================
+find_package(OpenCV REQUIRED)
+# ============================================================================
 target_include_directories(${PARA_APP_NAME}
                            PRIVATE
+                           ${OpenCV_INCLUDE_DIRS}
                            ${CMAKE_CURRENT_SOURCE_DIR}/include)
 # ============================================================================
 target_link_libraries(${PARA_APP_NAME}
                       PRIVATE
-                      pthread)
+                      pthread
+                      ${OpenCV_LIBS})
 # ============================================================================
 target_sources(${PARA_APP_NAME}
                PRIVATE
