@@ -420,7 +420,7 @@ namespace inference
         void Inference::OnReceiveFEvent(const deepracer::service::fusiondata::proxy::events::FEvent::FEvent::SampleType &FEvent)
         {
 
-            // m_logger.LogInfo() << "Inference::OnReceiveFMethod:" << FEvent;
+            m_logger.LogInfo() << "Inference::OnReceiveFMethod:" << FEvent.timestamp;
             deepracer::type::InferenceDataNode inferMsg = m_Model->sensorCB(FEvent);
             m_InferenceData->WriteDataIEvent(inferMsg);
         }
