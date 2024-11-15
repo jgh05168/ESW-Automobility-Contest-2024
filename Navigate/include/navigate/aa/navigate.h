@@ -25,6 +25,7 @@
 //새로운 변수 정의
 #include <map>
 #include <vector>
+#include <string>
 
 #include "constants.hpp"
  
@@ -80,9 +81,11 @@ private:
     // 새로운 멤버 변수 정의
     float m_throttleScale; // 스로틀 스케일 변수
     ActionSpaceTypes m_actionSpaceType; // 액션 스페이스 타입
-    std::vector<std::map<std::string, double>> m_actionSpace; // 액션 스페이스 데이터 구조
     std::map<std::string, float> m_maxActionSpaceValues; // 최대 액션 스페이스 값들
     std::map<char, float> m_speedMappingCoeficients; // 속도 매핑 계수
+
+    std::vector<std::map<std::string, double>> m_dActionSpace; // constants 액션 스페이스 데이터 구조
+    std::map<std::string, std::map<std::string, double>> m_cActionSpace; // metadata 액션 스페이스 데이터 구조
 };
  
 } /// namespace aa

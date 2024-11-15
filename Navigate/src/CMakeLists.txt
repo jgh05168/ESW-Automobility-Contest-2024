@@ -29,6 +29,7 @@ target_sources(${PARA_APP_NAME}
                navigate/aa/port/navigatedata.cpp
                navigate/aa/port/inferencedata.cpp
                navigate/aa/navigate.cpp
+               navigate/aa/constants.cpp
                main.cpp
                navigate/aa/jsoncpp.cpp  # jsoncpp.cpp 포함
 )

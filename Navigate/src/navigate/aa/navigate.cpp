@@ -25,6 +25,10 @@
 
 //현재 시간
 #include <chrono>
+#include <string>
+#include <vector>
+#include <map>
+#include <cmath>
  
 namespace navigate
 {
@@ -39,7 +43,7 @@ Navigate::Navigate()
     , m_actionSpaceType(ActionSpaceTypes::CONTINUOUS) // 기본 액션 스페이스 타입
     , m_maxActionSpaceValues({{ModelMetadataKeys::STEERING, 0.0}, {ModelMetadataKeys::SPEED, 0.0}}) // 최대 액션 스페이스 값 초기화
     , m_speedMappingCoeficients({{'a', 0.0}, {'b', 0.0}}) // 속도 매핑 계수 초기화
-    , m_actionSpace(DEFAULT_ACTION_SPACE)
+    //, m_actionSpace(DEFAULT_ACTION_SPACE)
 {
     SetActionSpace();
 }
@@ -109,16 +113,29 @@ void Navigate::SetActionSpace()
 
         if (!file.is_open()) {
             m_logger.LogError() << "Failed to open model_metadata.json";
-            m_actionSpace = DEFAULT_ACTION_SPACE;
+            m_dActionSpace = DEFAULT_ACTION_SPACE;
             m_actionSpaceType = ActionSpaceTypes::DISCRETE;
             return;
         }
 
-        file >> metadata;
+        // file >> metadata;
 
-        m_actionSpace = metadata["action_space"];
-        m_logger.LogInfo() << "Action space loaded: " << m_actionSpace;
-        m_actionSpaceType = metadata["action_space_type"];
+        // m_cActionSpace = metadata["action_space"];
+
+        const Json::Value& action_space = metadata["action_space"];
+
+        for (const auto& steering : action_space.getMemberNames()) {
+            std::map<std::string, double> steering_data;
+            const Json::Value& steering_values = action_space[steering];
+
+            steering_data["high"] = steering_values["high"].asDouble();
+            steering_data["low"] = steering_values["low"].asDouble();
+
+            m_cActionSpace[steering] = steering_data;
+        }
+
+        //m_logger.LogInfo() << "Action space loaded: " << m_cActionSpace;
+        //m_actionSpaceType = metadata["action_space_type"];
         if (metadata["action_space_type"] == "continuous")
         {
             m_actionSpaceType = ActionSpaceTypes::CONTINUOUS;
@@ -131,13 +148,23 @@ void Navigate::SetActionSpace()
     }
     catch (const std::exception& ex)
     {   
-        m_actionSpace = DEFAULT_ACTION_SPACE; // 기본 action space 설정
+        m_dActionSpace = DEFAULT_ACTION_SPACE; // 기본 action space 설정
         m_actionSpaceType = ActionSpaceTypes::DISCRETE; // 기본 action space 타입 설정
         m_logger.LogError() << "Failed to load action space and action space type due to: " << ex.what();
         return;
     }
 
-    m_logger.LogInfo() << "Setting the action space: " << m_actionSpace << " and action space type: " << m_actionSpaceType;
+    // m_logger.LogInfo() << " and action space type: " << m_actionSpaceType;
+
+    // if (m_actionSpaceType == ActionSpaceTypes::DISCRETE)
+    // {
+    //     m_logger.LogInfo() << "Setting the action space: " << m_dActionSpace << " and action space type: " << m_actionSpaceType;
+    // }
+    // else
+    // {
+    //     m_logger.LogInfo() << "Setting the action space: " << m_cActionSpace << " and action space type: " << m_actionSpaceType;
+    // }
+    //m_logger.LogInfo() << "Setting the action space: " << m_actionSpace << " and action space type: " << m_actionSpaceType;
     SetActionSpaceScales();
     return;
 }
@@ -190,8 +217,8 @@ void Navigate::ProcessInferenceData(const deepracer::service::inferencedata::pro
             int actionId = maxProb->class_label;
 
             // 각도와 스로틀 설정
-            navigateMsg.angle = GetMaxScaledValue(m_actionSpace[actionId][ModelMetadataKeys::STEERING], ModelMetadataKeys::STEERING);
-            navigateMsg.throttle *= GetNonLinearlyMappedSpeed(m_actionSpace[actionId][ModelMetadataKeys::SPEED]);
+            navigateMsg.angle = GetMaxScaledValue(m_dActionSpace[actionId][ModelMetadataKeys::STEERING], ModelMetadataKeys::STEERING);
+            navigateMsg.throttle *= GetNonLinearlyMappedSpeed(m_dActionSpace[actionId][ModelMetadataKeys::SPEED]);
         }
         else if (m_actionSpaceType == ActionSpaceTypes::CONTINUOUS)
         {
@@ -205,14 +232,14 @@ void Navigate::ProcessInferenceData(const deepracer::service::inferencedata::pro
 
             // 각 값을 스케일링
             float scaledAngle = ScaleContinuousValue(actionValues[0], -1.0f, 1.0f,
-                m_actionSpace[ModelMetadataKeys::STEERING][ModelMetadataKeys::CONTINUOUS_LOW],
-                m_actionSpace[ModelMetadataKeys::STEERING][ModelMetadataKeys::CONTINUOUS_HIGH]);
+                m_cActionSpace[ModelMetadataKeys::STEERING][ModelMetadataKeys::CONTINUOUS_LOW],
+                m_cActionSpace[ModelMetadataKeys::STEERING][ModelMetadataKeys::CONTINUOUS_HIGH]);
 
             navigateMsg.angle = GetMaxScaledValue(scaledAngle, ModelMetadataKeys::STEERING);
 
             float scaledThrottle = ScaleContinuousValue(actionValues[1], -1.0f, 1.0f,
-                m_actionSpace[ModelMetadataKeys::SPEED][ModelMetadataKeys::CONTINUOUS_LOW],
-                m_actionSpace[ModelMetadataKeys::SPEED][ModelMetadataKeys::CONTINUOUS_HIGH]);
+                m_cActionSpace[ModelMetadataKeys::SPEED][ModelMetadataKeys::CONTINUOUS_LOW],
+                m_cActionSpace[ModelMetadataKeys::SPEED][ModelMetadataKeys::CONTINUOUS_HIGH]);
 
             navigateMsg.throttle *= GetNonLinearlyMappedSpeed(scaledThrottle);
         }
@@ -238,14 +265,14 @@ float Navigate::GetMaxScaledValue(float actionValue, const std::string& actionKe
         float maxValue = m_maxActionSpaceValues[actionKey]; // actionKey에 해당하는 최대값을 가져옴
         if (maxValue <= 0.0f) // maxValue가 0 이하인 경우 에러 처리
         {
-            m_logger.LogError() << "Invalid " << actionKey << " value " << maxValue; // 로그에 오류 기록
+            //m_logger.LogError() << "Invalid " << actionKey << " value " << maxValue; // 로그에 오류 기록
             return 0.0f; // 비율을 0으로 반환
         }
         return actionValue / maxValue; // 비율을 계산하여 반환
     }
     catch (const std::exception& ex) // 예외 처리
     {
-        m_logger.LogError() << "Unable to scale the action value " << actionKey << ": " << ex.what(); // 로그에 오류 기록
+        //m_logger.LogError() << "Unable to scale the action value " << actionKey << ": " << ex.what(); // 로그에 오류 기록
         return 0.0f; // 비율을 0으로 반환
     }
 }
@@ -280,30 +307,34 @@ void Navigate::SetActionSpaceScales()
         if (m_actionSpaceType == ActionSpaceTypes::DISCRETE)
         {
             // 최대 스티어링 값 계산
-            m_maxActionSpaceValues[ModelMetadataKeys::STEERING] = 
-                std::abs(*std::max_element(m_actionSpace.begin(), m_actionSpace.end(),
+            auto maxSteeringElement = std::max_element(m_dActionSpace.begin(), m_dActionSpace.end(),
                 [](const auto& a, const auto& b) {
-                    return std::abs(a[ModelMetadataKeys::STEERING]) < std::abs(b[ModelMetadataKeys::STEERING]);
-                })[ModelMetadataKeys::STEERING]);
+                    return std::abs(a.at(ModelMetadataKeys::STEERING)) < std::abs(b.at(ModelMetadataKeys::STEERING));
+                });
+
+            m_maxActionSpaceValues[ModelMetadataKeys::STEERING] = std::abs(maxSteeringElement->at(ModelMetadataKeys::STEERING));
             
             // 최대 속도 값 계산
-            m_maxActionSpaceValues[ModelMetadataKeys::SPEED] = 
-                std::abs(*std::max_element(m_actionSpace.begin(), m_actionSpace.end(),
+            auto maxSpeedElement = std::max_element(m_dActionSpace.begin(), m_dActionSpace.end(),
                 [](const auto& a, const auto& b) {
-                    return std::abs(a[ModelMetadataKeys::SPEED]) < std::abs(b[ModelMetadataKeys::SPEED]);
-                })[ModelMetadataKeys::SPEED]);
+                    return std::abs(a.at(ModelMetadataKeys::SPEED)) < std::abs(b.at(ModelMetadataKeys::SPEED));
+                });
+
+            m_maxActionSpaceValues[ModelMetadataKeys::SPEED] = std::abs(maxSpeedElement->at(ModelMetadataKeys::SPEED));
         }
-        else if (m_actionSpaceType == ActionSpaceTypes::CONTINUOUS)
-        {
-            m_maxActionSpaceValues[ModelMetadataKeys::STEERING] =
-                m_actionSpace[ModelMetadataKeys::STEERING][ModelMetadataKeys::CONTINUOUS_HIGH];
-            m_maxActionSpaceValues[ModelMetadataKeys::SPEED] =
-                m_actionSpace[ModelMetadataKeys::SPEED][ModelMetadataKeys::CONTINUOUS_HIGH];
-        }
+
+        // else if (m_actionSpaceType == ActionSpaceTypes::CONTINUOUS)
         else
         {
-            throw std::runtime_error("Incorrect action space type: " + std::to_string(m_actionSpaceType));
+            m_maxActionSpaceValues[ModelMetadataKeys::STEERING] =
+                m_cActionSpace[ModelMetadataKeys::STEERING][ModelMetadataKeys::CONTINUOUS_HIGH];
+            m_maxActionSpaceValues[ModelMetadataKeys::SPEED] =
+                m_cActionSpace[ModelMetadataKeys::SPEED][ModelMetadataKeys::CONTINUOUS_HIGH];
         }
+        // else
+        // {
+        //     throw std::runtime_error("Incorrect action space type: " + std::to_string(m_actionSpaceType));
+        // }
 
         // 속도 매핑 계수 계산
         m_speedMappingCoeficients['a'] =
@@ -314,9 +345,9 @@ void Navigate::SetActionSpaceScales()
             (1.0f / m_maxActionSpaceValues[ModelMetadataKeys::SPEED]) *
             (4.0f * DEFAULT_SPEED_SCALES[1] - DEFAULT_SPEED_SCALES[0]);
 
-        m_logger.LogInfo() << "Action space scale set: " << m_maxActionSpaceValues 
-                           << " Mapping equation params a: " << m_speedMappingCoeficients['a']
-                           << " b: " << m_speedMappingCoeficients['b'];
+        // m_logger.LogInfo() << "Action space scale set: " << m_maxActionSpaceValues 
+        //                    << " Mapping equation params a: " << m_speedMappingCoeficients['a']
+        //                    << " b: " << m_speedMappingCoeficients['b'];
     }
     catch (const std::exception& ex)
     {
