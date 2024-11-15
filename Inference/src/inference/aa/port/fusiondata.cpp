@@ -225,7 +225,7 @@ void FusionData::ReadDataFEvent(ara::com::SamplePtr<deepracer::service::fusionda
     auto data = *samplePtr.Get();
     // put your logic
 
-    m_logger.LogVerbose() << "FusionData::ReadDataFEvent::" << data;
+    // m_logger.LogVerbose() << "FusionData::ReadDataFEvent::" << data;
 
     // FEvent 핸들러가 등록되어 있을시 해당 핸들러는 값과 함께 호출한다.
     if (m_receiveEventFEventHandler != nullptr)
