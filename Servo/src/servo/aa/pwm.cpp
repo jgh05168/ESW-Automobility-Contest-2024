@@ -1,4 +1,5 @@
 #include "servo/aa/pwm.hpp"
+#include <iostream>
 
 namespace PWM {
     /// Max size of the character buffer used to concat the file paths.
@@ -18,7 +19,16 @@ namespace PWM {
         }
         char buf[MAX_BUF];
         len = snprintf(buf, sizeof(buf), "%d", value);
-        write(fd, buf, len);
+
+        //write(fd, buf, len);
+
+        ssize_t bytes_written = write(fd, buf, len);
+        if (bytes_written == -1) {
+            std::cerr << "Error writing to file descriptor " << fd << std::endl;
+        } else {
+            std::cout << "Successfully wrote " << bytes_written << " bytes." << std::endl;
+        }
+
         close(fd);
     }
     /// Rewriting the command to dynamically find the pwmchip%d directory and return the syspath

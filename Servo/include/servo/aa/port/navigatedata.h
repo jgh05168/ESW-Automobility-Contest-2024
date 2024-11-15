@@ -60,6 +60,9 @@ public:
      
     /// @brief Read event data, NEvent
     void ReadDataNEvent(ara::com::SamplePtr<deepracer::service::navigatedata::proxy::events::NEvent::SampleType const> samplePtr);
+
+    void SetReceiveEventNEventHandler(
+        std::function<void(const deepracer::service::navigatedata::proxy::events::NEvent::SampleType&)> handler);
     
     
     
@@ -90,6 +93,8 @@ private:
     
     /// @brief Find service handle
     std::shared_ptr<ara::com::FindServiceHandle> m_findHandle;
+
+    std::function<void(const deepracer::service::navigatedata::proxy::events::NEvent::SampleType&)> m_receiveEventNEventHandler;
 };
  
 } /// namespace port

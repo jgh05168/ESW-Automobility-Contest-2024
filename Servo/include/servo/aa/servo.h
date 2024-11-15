@@ -18,7 +18,7 @@
 /// INCLUSION HEADER FILES
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 #include "servo/aa/port/navigatedata.h"
- 
+#include "servo_mgr.hpp"
 #include "para/swc/port_pool.h"
  
 namespace servo
@@ -47,6 +47,8 @@ public:
 private:
     /// @brief Run software component
     void Run();
+    void TaskReceiveNEventCyclic();
+    void Drive(const deepracer::service::navigatedata::proxy::events::NEvent::SampleType& navigateMsg);
  
 private:
     /// @brief Pool of port
@@ -57,6 +59,8 @@ private:
     
     /// @brief Instance of Port {Servo.NavigateData}
     std::shared_ptr<servo::aa::port::NavigateData> m_NavigateData;
+
+    std::unique_ptr<PWM::ServoMgr> m_servoMgr;
 };
  
 } /// namespace aa
