@@ -49,8 +49,20 @@ public:
 private:
     /// @brief Run software component
     void Run();
+
+    void TaskReceiveCEventCyclic();
+
+    void TaskReceiveLEventCyclic();
+
+    //void OnReceiveCEvent();
+    //void OnReceiveLEvent();
+    void OnReceiveCEvent(const deepracer::type::CameraDataNode& sample);
+    void OnReceiveLEvent(const deepracer::type::LidarDataNode& sample);
+
  
 private:
+    bool m_running;
+
     /// @brief Pool of port
     ::para::swc::PortPool m_workers;
     
