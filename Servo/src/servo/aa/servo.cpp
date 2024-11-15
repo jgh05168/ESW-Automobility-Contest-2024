@@ -19,7 +19,7 @@
 #include "servo/aa/led_mgr.hpp"
 
 //json 사용
-#include "json/json.h"
+#include "servo/aa/json/json.h"
 
 namespace servo
 {
@@ -29,6 +29,7 @@ namespace aa
 Servo::Servo()
     : m_logger(ara::log::CreateLogger("SRV", "SWC", ara::log::LogLevel::kVerbose))
     , m_workers(1)
+    , m_servoMgr(std::make_unique<PWM::ServoMgr>()) // 초기화
 {
 }
  
@@ -76,7 +77,7 @@ void Servo::Run()
 
 void Servo::TaskReceiveNEventCyclic()
 {
-    m_NavigateData->SetReceiveEventINventHandler([this](const auto& navigateMsg)
+    m_NavigateData->SetReceiveEventNEventHandler([this](const auto& navigateMsg)
     {
         Drive(navigateMsg);
     });
@@ -85,7 +86,7 @@ void Servo::TaskReceiveNEventCyclic()
 
 void Servo::Drive(const deepracer::service::navigatedata::proxy::events::NEvent::SampleType& navigateMsg)
 {
-    servoMgr->servoSubscriber(navigateMsg.throttle, navigateMsg.angle); 
+    m_servoMgr->servoSubscriber(navigateMsg.throttle, navigateMsg.angle); 
 }
  
 } /// namespace aa

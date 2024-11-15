@@ -13,7 +13,10 @@ cmake_minimum_required(VERSION 3.16)
 set(PARA_APP_NAME Servo)
 set(PARA_APP_VERSION 1.0.0)
 set(PARA_APP_GEN_DIR ${CMAKE_CURRENT_SOURCE_DIR})
- 
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 Para_App()
 # ============================================================================
  

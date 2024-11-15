@@ -18,7 +18,7 @@ Para_Target(${PARA_APP_NAME}
 target_include_directories(${PARA_APP_NAME}
                            PRIVATE
                            ${CMAKE_CURRENT_SOURCE_DIR}/include
-                           ${CMAKE_CURRENT_SOURCE_DIR}/src/servo/aa/json)
+                           ${CMAKE_CURRENT_SOURCE_DIR}/include/servo/aa/json)
 # ============================================================================
 target_link_libraries(${PARA_APP_NAME}
                       PRIVATE
