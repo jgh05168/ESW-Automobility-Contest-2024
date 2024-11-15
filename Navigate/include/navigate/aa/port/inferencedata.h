@@ -60,6 +60,9 @@ public:
      
     /// @brief Read event data, IEvent
     void ReadDataIEvent(ara::com::SamplePtr<deepracer::service::inferencedata::proxy::events::IEvent::SampleType const> samplePtr);
+
+    void SetReceiveEventIEventHandler(
+        std::function<void(const deepracer::service::inferencedata::proxy::events::IEvent::SampleType&)> handler);
     
     
     
@@ -70,9 +73,6 @@ private:
     
     /// @brief Callback for event receiver, IEvent
     void RegistReceiverIEvent();
-
-    void SetReceiveEventIEventHandler(
-        std::function<void(const deepracer::service::inferencedata::proxy::events::IEvent::SampleType&)> handler);
     
     
 private:

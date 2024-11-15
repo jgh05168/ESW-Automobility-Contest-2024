@@ -37,6 +37,11 @@ struct InferenceData
     float y_min;
     float x_max;
     float y_max;
+
+    InferenceData()
+        : class_label(0), class_prob(0.0f), x_min(0.0f), y_min(0.0f), x_max(0.0f), y_max(0.0f)
+    {}
+    
     PARA_STRUCTURE(InferenceData, class_label, class_prob, x_min, y_min, x_max, y_max);
 };
 } /// namespace type
