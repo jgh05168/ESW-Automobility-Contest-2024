@@ -10,7 +10,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// GENERATED FILE NAME               : inferencedata.h
 /// SOFTWARE COMPONENT NAME           : InferenceData
-/// GENERATED DATE                    : 2024-10-25 13:47:26
+/// GENERATED DATE                    : 2024-11-07 14:01:17
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 #ifndef PARA_AA_GEN_SOFTWARE_COMPONENT_RPORT_NAVIGATE_AA_INFERENCEDATA_H
 #define PARA_AA_GEN_SOFTWARE_COMPONENT_RPORT_NAVIGATE_AA_INFERENCEDATA_H
@@ -60,6 +60,9 @@ public:
      
     /// @brief Read event data, IEvent
     void ReadDataIEvent(ara::com::SamplePtr<deepracer::service::inferencedata::proxy::events::IEvent::SampleType const> samplePtr);
+
+    void SetReceiveEventIEventHandler(
+        std::function<void(const deepracer::service::inferencedata::proxy::events::IEvent::SampleType&)> handler);
     
     
     
@@ -90,6 +93,8 @@ private:
     
     /// @brief Find service handle
     std::shared_ptr<ara::com::FindServiceHandle> m_findHandle;
+
+    std::function<void(const deepracer::service::inferencedata::proxy::events::IEvent::SampleType&)> m_receiveEventIEventHandler;
 };
  
 } /// namespace port

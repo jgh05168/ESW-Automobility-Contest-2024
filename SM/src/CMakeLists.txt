@@ -26,7 +26,6 @@ target_link_libraries(${PARA_APP_NAME}
 target_sources(${PARA_APP_NAME}
                PRIVATE
                sm/para/port/machinefg.cpp
-               sm/para/port/deepracerfg.cpp
                sm/para/sm.cpp
                main.cpp
 )

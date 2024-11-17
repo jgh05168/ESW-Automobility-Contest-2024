@@ -25,8 +25,8 @@ target_link_libraries(${PARA_APP_NAME}
 # ============================================================================
 target_sources(${PARA_APP_NAME}
                PRIVATE
-               sensorfusion/aa/port/fusiondata.cpp
                sensorfusion/aa/port/cameradata.cpp
+               sensorfusion/aa/port/fusiondata.cpp
                sensorfusion/aa/port/lidardata.cpp
                sensorfusion/aa/sensorfusion.cpp
                main.cpp

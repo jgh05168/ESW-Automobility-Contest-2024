@@ -10,7 +10,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// GENERATED FILE NAME               : cameradata.h
 /// SOFTWARE COMPONENT NAME           : CameraData
-/// GENERATED DATE                    : 2024-10-25 13:47:26
+/// GENERATED DATE                    : 2024-11-07 14:01:17
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 #ifndef PARA_AA_GEN_SOFTWARE_COMPONENT_RPORT_SENSORFUSION_AA_CAMERADATA_H
 #define PARA_AA_GEN_SOFTWARE_COMPONENT_RPORT_SENSORFUSION_AA_CAMERADATA_H
@@ -61,7 +61,8 @@ public:
     /// @brief Read event data, CEvent
     void ReadDataCEvent(ara::com::SamplePtr<deepracer::service::cameradata::proxy::events::CEvent::SampleType const> samplePtr);
     
-    
+    void SetReceiveEventCEventHandler(
+    std::function<void(const deepracer::service::cameradata::proxy::events::CEvent::SampleType&)> handler);
     
 private:
     /// @brief Callback for find service
@@ -90,6 +91,8 @@ private:
     
     /// @brief Find service handle
     std::shared_ptr<ara::com::FindServiceHandle> m_findHandle;
+
+    std::function<void(const deepracer::service::cameradata::proxy::events::CEvent::SampleType&)> m_receiveEventCEventHandler;
 };
  
 } /// namespace port

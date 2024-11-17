@@ -10,7 +10,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// GENERATED FILE NAME               : navigatedata.h
 /// SOFTWARE COMPONENT NAME           : NavigateData
-/// GENERATED DATE                    : 2024-10-25 13:47:26
+/// GENERATED DATE                    : 2024-11-07 14:01:17
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 #ifndef PARA_AA_GEN_SOFTWARE_COMPONENT_RPORT_SERVO_AA_NAVIGATEDATA_H
 #define PARA_AA_GEN_SOFTWARE_COMPONENT_RPORT_SERVO_AA_NAVIGATEDATA_H
@@ -60,6 +60,9 @@ public:
      
     /// @brief Read event data, NEvent
     void ReadDataNEvent(ara::com::SamplePtr<deepracer::service::navigatedata::proxy::events::NEvent::SampleType const> samplePtr);
+
+    void SetReceiveEventNEventHandler(
+        std::function<void(const deepracer::service::navigatedata::proxy::events::NEvent::SampleType&)> handler);
     
     
     
@@ -90,6 +93,8 @@ private:
     
     /// @brief Find service handle
     std::shared_ptr<ara::com::FindServiceHandle> m_findHandle;
+
+    std::function<void(const deepracer::service::navigatedata::proxy::events::NEvent::SampleType&)> m_receiveEventNEventHandler;
 };
  
 } /// namespace port

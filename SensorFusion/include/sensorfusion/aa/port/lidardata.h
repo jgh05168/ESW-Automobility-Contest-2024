@@ -10,7 +10,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// GENERATED FILE NAME               : lidardata.h
 /// SOFTWARE COMPONENT NAME           : LidarData
-/// GENERATED DATE                    : 2024-10-25 13:47:26
+/// GENERATED DATE                    : 2024-11-07 14:01:17
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 #ifndef PARA_AA_GEN_SOFTWARE_COMPONENT_RPORT_SENSORFUSION_AA_LIDARDATA_H
 #define PARA_AA_GEN_SOFTWARE_COMPONENT_RPORT_SENSORFUSION_AA_LIDARDATA_H
@@ -46,21 +46,23 @@ public:
     /// @brief Terminate port
     void Terminate();
     
-    /// @brief Subscribe event, LEevent
-    void SubscribeLEevent();
+    /// @brief Subscribe event, LEvent
+    void SubscribeLEvent();
      
-    /// @brief Stop event subscription, LEevent
-    void StopSubscribeLEevent();
+    /// @brief Stop event subscription, LEvent
+    void StopSubscribeLEvent();
      
-    /// @brief Event receive handler, LEevent
-    void ReceiveEventLEeventTriggered();
+    /// @brief Event receive handler, LEvent
+    void ReceiveEventLEventTriggered();
      
-    /// @brief Event receive handler, LEevent
-    void ReceiveEventLEeventCyclic();
+    /// @brief Event receive handler, LEvent
+    void ReceiveEventLEventCyclic();
      
-    /// @brief Read event data, LEevent
-    void ReadDataLEevent(ara::com::SamplePtr<deepracer::service::lidardata::proxy::events::LEevent::SampleType const> samplePtr);
+    /// @brief Read event data, LEvent
+    void ReadDataLEvent(ara::com::SamplePtr<deepracer::service::lidardata::proxy::events::LEvent::SampleType const> samplePtr);
     
+    void SetReceiveEventLEventHandler(
+        std::function<void(const deepracer::service::lidardata::proxy::events::LEvent::SampleType&)> handler);
     
     
 private:
@@ -68,8 +70,8 @@ private:
     void Find(ara::com::ServiceHandleContainer<deepracer::service::lidardata::proxy::SvLidarDataProxy::HandleType> handles,
               ara::com::FindServiceHandle findHandle);
     
-    /// @brief Callback for event receiver, LEevent
-    void RegistReceiverLEevent();
+    /// @brief Callback for event receiver, LEvent
+    void RegistReceiverLEvent();
     
     
 private:
@@ -90,6 +92,9 @@ private:
     
     /// @brief Find service handle
     std::shared_ptr<ara::com::FindServiceHandle> m_findHandle;
+
+    std::function<void(const deepracer::service::lidardata::proxy::events::LEvent::SampleType&)> m_receiveEventLEventHandler;
+
 };
  
 } /// namespace port

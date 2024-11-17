@@ -10,7 +10,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// GENERATED FILE NAME               : cameradata.h
 /// SOFTWARE COMPONENT NAME           : CameraData
-/// GENERATED DATE                    : 2024-10-25 13:47:26
+/// GENERATED DATE                    : 2024-11-07 14:01:17
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 #ifndef PARA_AA_GEN_SOFTWARE_COMPONENT_PPORT_CAMERA_AA_CAMERADATA_H
 #define PARA_AA_GEN_SOFTWARE_COMPONENT_PPORT_CAMERA_AA_CAMERADATA_H
@@ -21,6 +21,7 @@
  
 #include "ara/log/logger.h"
  
+#include <opencv2/opencv.hpp>
 #include <mutex>
 #include <thread>
  
@@ -86,6 +87,12 @@ public:
      
     /// @brief Send event directly with argument, CEvent
     void SendEventCEventTriggered(const deepracer::service::cameradata::skeleton::events::CEvent::SampleType& data);
+
+    bool scanCameraIndex(const std::vector<int32_t>& cameraIdxList);
+
+    void produceFrames();
+
+    int64_t getCurrentTimestamp() const;
      
 private:
     /// @brief Logger for this port
@@ -102,6 +109,10 @@ private:
     
     /// @brief Data for event, CEvent
     deepracer::service::cameradata::skeleton::events::CEvent::SampleType m_CEventData;
+
+    std::vector<cv::VideoCapture> videoCaptureList_;
+    cv::VideoCapture cap1;
+    cv::VideoCapture cap2;
 };
  
 } /// namespace port

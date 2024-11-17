@@ -10,7 +10,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// GENERATED FILE NAME               : cameradata.cpp
 /// SOFTWARE COMPONENT NAME           : CameraData
-/// GENERATED DATE                    : 2024-10-25 13:47:26
+/// GENERATED DATE                    : 2024-11-07 14:01:17
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 #include "sensorfusion/aa/port/cameradata.h"
  
@@ -223,7 +223,20 @@ void CameraData::ReceiveEventCEventCyclic()
 void CameraData::ReadDataCEvent(ara::com::SamplePtr<deepracer::service::cameradata::proxy::events::CEvent::SampleType const> samplePtr)
 {
     auto data = *samplePtr.Get();
-    // put your logic
+    
+    m_logger.LogVerbose() << "CameraData::ReadDataCEvent::" << data.camera_data0[0];
+
+    //CEvent 핸들러가 등록되어 있다면 해당 핸들러는 값과 함께 호출됨
+    if(m_receiveEventCEventHandler != nullptr)
+    {
+        m_receiveEventCEventHandler(data);
+    }
+}
+
+void CameraData::SetReceiveEventCEventHandler(
+    std::function<void(const deepracer::service::cameradata::proxy::events::CEvent::SampleType&)> handler)
+{
+    m_receiveEventCEventHandler = handler;
 }
  
 } /// namespace port

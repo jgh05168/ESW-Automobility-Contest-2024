@@ -10,7 +10,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// GENERATED FILE NAME               : svlidardata_skeleton.h
 /// SERVICE INTERFACE NAME            : SvLidarData
-/// GENERATED DATE                    : 2024-10-25 13:47:25
+/// GENERATED DATE                    : 2024-11-13 13:00:52
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///                                                                                                        
 /// CAUTION!! AUTOMATICALLY GENERATED FILE - DO NOT EDIT                                                   
@@ -39,28 +39,28 @@ class SvLidarDataSkeleton;
 namespace events
 {
 /// @uptrace{SWS_CM_00003}
-class LEevent
+class LEvent
 {
 public:
     /// @brief Type alias for type of event data
     /// @uptrace{SWS_CM_00162, SWS_CM_90437}
     using SampleType = deepracer::type::LidarDataNode;
     /// @brief Constructor
-    explicit LEevent(para::com::SkeletonInterface* interface) : mInterface(interface)
+    explicit LEvent(para::com::SkeletonInterface* interface) : mInterface(interface)
     {
     }
     /// @brief Destructor
-    virtual ~LEevent() = default;
+    virtual ~LEvent() = default;
     /// @brief Delete copy constructor
-    LEevent(const LEevent& other) = delete;
+    LEvent(const LEvent& other) = delete;
     /// @brief Delete copy assignment
-    LEevent& operator=(const LEevent& other) = delete;
+    LEvent& operator=(const LEvent& other) = delete;
     /// @brief Move constructor
-    LEevent(LEevent&& other) noexcept : mInterface(other.mInterface)
+    LEvent(LEvent&& other) noexcept : mInterface(other.mInterface)
     {
     }
     /// @brief Move assignment
-    LEevent& operator=(LEevent&& other) noexcept
+    LEvent& operator=(LEvent&& other) noexcept
     {
         mInterface = other.mInterface;
         return *this;
@@ -83,7 +83,7 @@ public:
     
 private:
     para::com::SkeletonInterface* mInterface;
-    const std::string kCallSign = {"LEevent"};
+    const std::string kCallSign = {"LEvent"};
 };
 } /// namespace events
 /// @uptrace{SWS_CM_01031}
@@ -99,7 +99,7 @@ public:
     /// @uptrace{SWS_CM_00002, SWS_CM_00152}
     SvLidarDataSkeleton(ara::core::InstanceSpecifier instanceSpec, ara::com::MethodCallProcessingMode mode = ara::com::MethodCallProcessingMode::kEvent)
         : mInterface(std::make_unique<para::com::SkeletonInterface>(instanceSpec, mode))
-        , LEevent(mInterface.get())
+        , LEvent(mInterface.get())
     {
         mInterface->SetE2EErrorHandler([this](const ara::com::e2e::E2EErrorDomain& errorCode, ara::com::e2e::DataID dataID, ara::com::e2e::MessageCounter messageCounter) {
             E2EErrorHandler(errorCode, dataID, messageCounter);
@@ -117,7 +117,7 @@ public:
     /// @uptrace{SWS_CM_00135}
     SvLidarDataSkeleton(SvLidarDataSkeleton&& other) noexcept
         : mInterface(std::move(other.mInterface))
-        , LEevent(std::move(other.LEevent))
+        , LEvent(std::move(other.LEvent))
     {
         mInterface->SetE2EErrorHandler([this](const ara::com::e2e::E2EErrorDomain& errorCode, ara::com::e2e::DataID dataID, ara::com::e2e::MessageCounter messageCounter) {
             E2EErrorHandler(errorCode, dataID, messageCounter);
@@ -129,7 +129,7 @@ public:
     SvLidarDataSkeleton& operator=(SvLidarDataSkeleton&& other) noexcept
     {
         mInterface = std::move(other.mInterface);
-        LEevent = std::move(other.LEevent);
+        LEvent = std::move(other.LEvent);
         mInterface->SetE2EErrorHandler([this](const ara::com::e2e::E2EErrorDomain& errorCode, ara::com::e2e::DataID dataID, ara::com::e2e::MessageCounter messageCounter) {
             E2EErrorHandler(errorCode, dataID, messageCounter);
         });
@@ -176,8 +176,8 @@ private:
     std::unique_ptr<para::com::SkeletonInterface> mInterface;
     
 public:
-    /// @brief Event, LEevent
-    events::LEevent LEevent;
+    /// @brief Event, LEvent
+    events::LEvent LEvent;
     
 private:
 };

@@ -10,9 +10,18 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// GENERATED FILE NAME               : cameradata.cpp
 /// SOFTWARE COMPONENT NAME           : CameraData
-/// GENERATED DATE                    : 2024-10-25 13:47:26
+/// GENERATED DATE                    : 2024-11-07 14:01:17
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+#include <vector>
+#include <chrono>
+#include <thread>
+#include <mutex>
+#include <opencv2/opencv.hpp>
+#include <stdint.h>
+
 #include "camera/aa/port/cameradata.h"
+
+using namespace cv;
  
 namespace deepracer
 {
@@ -65,27 +74,144 @@ void CameraData::Start()
     if (offer.HasValue())
     {
         m_running = true;
-        m_logger.LogVerbose() << "CameraData::Start::OfferService";
+        m_logger.LogVerbose() << "CameraData::Start::OfferService::m_running-True";
     }
     else
     {
         m_running = false;
-        m_logger.LogError() << "CameraData::Start::OfferService::" << offer.Error().Message();
+        m_logger.LogError() << "CameraData::Start::OfferService::m_running-false" << offer.Error().Message();
     }
 }
  
-void CameraData::Terminate()
-{
+void CameraData::Terminate() {
     m_logger.LogVerbose() << "CameraData::Terminate";
-    
-    // stop port
     m_running = false;
-    
-    // stop offer service
+
     m_interface->StopOfferService();
-    m_logger.LogVerbose() << "CameraData::Terminate::StopOfferService";
+
+    if (cap1.isOpened()) {
+        cap1.release();
+        m_logger.LogVerbose() << "cap1이 안전하게 해제됨";
+    }
+
+    if (cap2.isOpened()) {
+        cap2.release();
+        m_logger.LogVerbose() << "cap2가 안전하게 해제됨";
+    }
+
+    // GStreamer 파이프라인이 NULL 상태로 전환되었는지 확인 (release 호출 후)
+    if (!cap1.isOpened() && !cap2.isOpened()) {
+        m_logger.LogVerbose() << "GStreamer 파이프라인이 NULL 상태";
+    } else {
+        m_logger.LogError() << "GStreamer 파이프라인이 해제되지 않음";
+    }
+
+    m_logger.LogVerbose() << "CameraData::Terminate::카메라 리소스 해제됨";
 }
- 
+
+/*==================================================*/
+// 카메라 찾기
+bool CameraData::scanCameraIndex(const std::vector<int32_t>& cameraIdxList) {
+    m_logger.LogVerbose() << "스캔 중: 카메라 인덱스 ";
+
+    cap1.open(cameraIdxList[0]);
+    cap2.open(cameraIdxList[1]);
+
+    if (!cap1.isOpened()) {
+        m_logger.LogError() << "카메라1을 열 수 없음";
+        return false;
+    }
+
+    if (!cap2.isOpened()) {
+        m_logger.LogError() << "카메라2를 열 수 없음.";
+        return false;
+    }
+
+    m_logger.LogVerbose() << "카메라가 성공적으로 열렸음";
+    return true;
+    return 0;
+}
+// 프레임 저장하기
+void CameraData::produceFrames() {
+    // 임시 데이터 구조체 생성
+    m_logger.LogVerbose() << "produceFrames 진입";
+    deepracer::service::cameradata::skeleton::events::CEvent::SampleType frame_data;  // 임시 데이터 구조체 생성
+    //VideoCapture cap1(0);
+    //VideoCapture cap2(2);
+    if (!cap1.isOpened()) {
+        m_logger.LogError() << "1번 카메라가 열리지 않음.";
+        return;
+    }
+
+    if (!cap2.isOpened()) {
+        m_logger.LogError() << "2번 카메라가 열리지 않음";
+        return;
+    }
+
+    // MJPEC 코덱 및 크기 설정
+    cap1.set(CAP_PROP_FOURCC, VideoWriter::fourcc('M', 'J', 'P', 'G'));
+    cap1.set(CAP_PROP_FRAME_WIDTH, 160);
+    cap1.set(CAP_PROP_FRAME_HEIGHT, 120);
+
+    cap2.set(CAP_PROP_FOURCC, VideoWriter::fourcc('M', 'J', 'P', 'G'));
+    cap2.set(CAP_PROP_FRAME_WIDTH, 160);
+    cap2.set(CAP_PROP_FRAME_HEIGHT, 120);
+
+    while(m_running && cap1.isOpened() && cap2.isOpened()) {
+        // 프레임 가져오기
+        //m_logger.LogVerbose() << "while문 프레임 가져오기::진입";
+        Mat frame1;
+        Mat frame2;
+	    std::vector<uchar> buffer1;
+        std::vector<uchar> buffer2;
+        cap1 >> frame1;
+        cap2 >> frame2;
+        if (frame1.empty() || frame2.empty()) {
+            m_logger.LogError() << "프레임을 캡처할 수 없음.";
+            break;
+        }
+
+    // 전송 모듈 코드 //////////////////////////////////////////////////////////// 
+	    // 프레임 직렬화
+        // m_logger.LogVerbose() << "while문::프레임직렬화::진입";
+	    imencode(".jpeg", frame1, buffer1);
+        imencode(".jpeg", frame2, buffer2);
+        if (!imencode(".jpeg", frame1, buffer1)) {
+            m_logger.LogError() << "frame1 인코딩 실패";
+        }
+        if (!imencode(".jpeg", frame2, buffer2)) {
+            m_logger.LogError() << "frame2 인코딩 실패";
+        }
+
+
+        // 버퍼 크기 출력
+        m_logger.LogVerbose() << "buffer1 크기: " << buffer1.size();
+        m_logger.LogVerbose() << "buffer2 크기: " << buffer2.size();
+
+        frame_data.camera_data0.resize(buffer1.size());
+        frame_data.camera_data1.resize(buffer2.size());
+
+        // 첫 번째 또는 두 번째 카메라 데이터에 저장
+        std::copy(buffer1.begin(), buffer1.begin() + std::min(buffer1.size(), frame_data.camera_data0.size()), frame_data.camera_data0.begin());
+        std::copy(buffer2.begin(), buffer2.begin() + std::min(buffer2.size(), frame_data.camera_data1.size()), frame_data.camera_data1.begin());
+
+        // 타임스탬프 설정
+        frame_data.timestamp = getCurrentTimestamp();
+
+        // frame_data를 m_CEventData에 저장
+        WriteDataCEvent(frame_data);
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+}
+// 밀리초 단위 타임스탬프 반환
+int64_t CameraData::getCurrentTimestamp() const {
+    using namespace std::chrono;
+    auto now = system_clock::now();
+    auto now_ms = time_point_cast<milliseconds>(now);
+    return now_ms.time_since_epoch().count();
+}
+/*==================================================*/
 void CameraData::WriteDataCEvent(const deepracer::service::cameradata::skeleton::events::CEvent::SampleType& data)
 {
     std::lock_guard<std::mutex> lock(m_mutex);
@@ -102,6 +228,11 @@ void CameraData::SendEventCEventCyclic()
             if (send.HasValue())
             {
                 m_logger.LogVerbose() << "CameraData::SendEventCEventCyclic::Send";
+                if (!m_CEventData.camera_data0.empty()) {
+                    m_logger.LogVerbose() << "m_CEventData.camera_data0에 데이터가 삽입됨.";
+                } else {
+                    m_logger.LogVerbose() << "m_CEventData.camera_data0이 비어 있음.";
+                }
             }
             else
             {

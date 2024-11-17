@@ -10,7 +10,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// GENERATED FILE NAME               : impl_type_inferencedata.h
 /// IMPLEMENTATION DATA TYPE NAME     : InferenceData
-/// GENERATED DATE                    : 2024-10-25 13:47:26
+/// GENERATED DATE                    : 2024-11-07 14:01:17
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///                                                                                                        
 /// CAUTION!! AUTOMATICALLY GENERATED FILE - DO NOT EDIT                                                   
@@ -37,6 +37,11 @@ struct InferenceData
     float y_min;
     float x_max;
     float y_max;
+
+    InferenceData()
+        : class_label(0), class_prob(0.0f), x_min(0.0f), y_min(0.0f), x_max(0.0f), y_max(0.0f)
+    {}
+    
     PARA_STRUCTURE(InferenceData, class_label, class_prob, x_min, y_min, x_max, y_max);
 };
 } /// namespace type

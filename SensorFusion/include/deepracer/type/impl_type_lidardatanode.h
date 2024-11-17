@@ -10,7 +10,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// GENERATED FILE NAME               : impl_type_lidardatanode.h
 /// IMPLEMENTATION DATA TYPE NAME     : LidarDataNode
-/// GENERATED DATE                    : 2024-10-25 13:47:25
+/// GENERATED DATE                    : 2024-11-13 13:00:52
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///                                                                                                        
 /// CAUTION!! AUTOMATICALLY GENERATED FILE - DO NOT EDIT                                                   
@@ -24,7 +24,7 @@
 /// @uptrace{SWS_CM_00402}
 #include <cstdint>
 #include <ara/core/structure.h>
-#include "deepracer/type/impl_type_lidardatavector.h"
+#include "deepracer/type/impl_type_floatvector.h"
 /// @uptrace{SWS_CM_10375}
 namespace deepracer
 {
@@ -33,7 +33,7 @@ namespace type
 struct LidarDataNode
 {
     std::int64_t timestamp;
-    deepracer::type::LidarDataVector lidar_data;
+    deepracer::type::FloatVector lidar_data;
     PARA_STRUCTURE(LidarDataNode, timestamp, lidar_data);
 };
 } /// namespace type

@@ -10,7 +10,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// GENERATED FILE NAME               : fusiondata.h
 /// SOFTWARE COMPONENT NAME           : FusionData
-/// GENERATED DATE                    : 2024-10-25 13:47:26
+/// GENERATED DATE                    : 2024-11-07 14:01:17
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 #ifndef PARA_AA_GEN_SOFTWARE_COMPONENT_PPORT_SENSORFUSION_AA_FUSIONDATA_H
 #define PARA_AA_GEN_SOFTWARE_COMPONENT_PPORT_SENSORFUSION_AA_FUSIONDATA_H
@@ -18,6 +18,8 @@
 /// INCLUSION HEADER FILES
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 #include "deepracer/service/fusiondata/svfusiondata_skeleton.h"
+#include "deepracer/service/cameradata/svcameradata_proxy.h"
+#include "deepracer/service/lidardata/svlidardata_proxy.h"
  
 #include "ara/log/logger.h"
  
@@ -40,7 +42,7 @@ public:
     SvFusionDataSkeletonImpl(ara::core::InstanceSpecifier instanceSpec, ara::com::MethodCallProcessingMode mode = ara::com::MethodCallProcessingMode::kEvent);
     
     /// @brief Request with Response method, FMethod
-    ara::core::Future<SvFusionDataSkeleton::FMethodOutput> FMethod() override;
+    //ara::core::Future<SvFusionDataSkeleton::FMethodOutput> FMethod() override;
     
     
 private:
@@ -76,6 +78,12 @@ public:
     
     /// @brief Terminate port
     void Terminate();
+
+    void WriteDataFEventCamera(const deepracer::type::CameraDataNode& data);
+
+    void WriteDataFEventLidar(const deepracer::type::LidarDataNode& data);
+
+    void SendEventFEventCyclic();
     
 private:
     /// @brief Logger for this port
@@ -90,6 +98,11 @@ private:
     /// @brief AUTOSAR Port Interface
     std::shared_ptr<deepracer::service::fusiondata::skeleton::SvFusionDataSkeletonImpl> m_interface;
     
+    deepracer::service::fusiondata::skeleton::events::FEvent::SampleType m_FEventData;
+
+    deepracer::service::cameradata::proxy::events::CEvent::SampleType m_CameraData;
+    deepracer::service::lidardata::proxy::events::LEvent::SampleType m_LidarData;
+
 };
  
 } /// namespace port

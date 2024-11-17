@@ -10,14 +10,15 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// GENERATED FILE NAME               : lidar.h
 /// SOFTWARE COMPONENT NAME           : Lidar
-/// GENERATED DATE                    : 2024-10-25 13:47:26
+/// GENERATED DATE                    : 2024-11-07 14:01:17
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 #ifndef PARA_AA_GEN_SOFTWARE_COMPONENT_LIDAR_AA_H
 #define PARA_AA_GEN_SOFTWARE_COMPONENT_LIDAR_AA_H
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// INCLUSION HEADER FILES
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-#include "lidar/aa/port/lidar.h"
+#include "lidar/aa/port/lidardata.h"
+#include "sl_lidar.h" 
  
 #include "para/swc/port_pool.h"
  
@@ -43,6 +44,8 @@ public:
     
     /// @brief Terminate software component
     void Terminate();
+
+    void TaskGenerateLEventValue();
  
 private:
     /// @brief Run software component
@@ -55,8 +58,12 @@ private:
     /// @brief Logger for software component
     ara::log::Logger& m_logger;
     
-    /// @brief Instance of Port {Lidar.Lidar}
-    std::shared_ptr<lidar::aa::port::Lidar> m_Lidar;
+    /// @brief Instance of Port {Lidar.LidarData}
+    std::shared_ptr<lidar::aa::port::LidarData> m_LidarData;
+
+    bool m_running;
+
+    std::shared_ptr<sl::ILidarDriver> drv;
 };
  
 } /// namespace aa

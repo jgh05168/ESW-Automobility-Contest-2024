@@ -10,10 +10,13 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// GENERATED FILE NAME               : inferencedata.cpp
 /// SOFTWARE COMPONENT NAME           : InferenceData
-/// GENERATED DATE                    : 2024-10-25 13:47:26
+/// GENERATED DATE                    : 2024-11-07 14:01:17
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+#include <string>
 #include "navigate/aa/port/inferencedata.h"
  
+#include "deepracer/service/inferencedata/svinferencedata_proxy.h"
+
 namespace navigate
 {
 namespace aa
@@ -224,6 +227,18 @@ void InferenceData::ReadDataIEvent(ara::com::SamplePtr<deepracer::service::infer
 {
     auto data = *samplePtr.Get();
     // put your logic
+
+    // REvent 핸들러가 등록되어 있을시 해당 핸들러는 값과 함께 호출한다.
+    if (m_receiveEventIEventHandler != nullptr)
+    {
+        m_receiveEventIEventHandler(data);
+    }
+}
+
+void InferenceData::SetReceiveEventIEventHandler(
+    std::function<void(const deepracer::service::inferencedata::proxy::events::IEvent::SampleType&)> handler)
+{
+    m_receiveEventIEventHandler = handler;
 }
  
 } /// namespace port

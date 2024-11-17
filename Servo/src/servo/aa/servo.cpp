@@ -10,12 +10,17 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// GENERATED FILE NAME               : servo.cpp
 /// SOFTWARE COMPONENT NAME           : Servo
-/// GENERATED DATE                    : 2024-10-25 13:47:26
+/// GENERATED DATE                    : 2024-11-07 14:01:17
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// INCLUSION HEADER FILES
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 #include "servo/aa/servo.h"
- 
+#include "servo/aa/servo_mgr.hpp"
+#include "servo/aa/led_mgr.hpp"
+
+//json 사용
+#include "servo/aa/json/json.h"
+
 namespace servo
 {
 namespace aa
@@ -24,6 +29,7 @@ namespace aa
 Servo::Servo()
     : m_logger(ara::log::CreateLogger("SRV", "SWC", ara::log::LogLevel::kVerbose))
     , m_workers(1)
+    , m_servoMgr(std::make_unique<PWM::ServoMgr>()) // 초기화
 {
 }
  
@@ -63,9 +69,24 @@ void Servo::Run()
 {
     m_logger.LogVerbose() << "Servo::Run";
     
-    m_workers.Async([this] { m_NavigateData->ReceiveEventNEventCyclic(); });
+    //m_workers.Async([this] { m_NavigateData->ReceiveEventNEventCyclic(); });
+    m_workers.Async([this] { TaskReceiveNEventCyclic(); });
     
     m_workers.Wait();
+}
+
+void Servo::TaskReceiveNEventCyclic()
+{
+    m_NavigateData->SetReceiveEventNEventHandler([this](const auto& navigateMsg)
+    {
+        Drive(navigateMsg);
+    });
+    m_NavigateData->ReceiveEventNEventCyclic();
+}
+
+void Servo::Drive(const deepracer::service::navigatedata::proxy::events::NEvent::SampleType& navigateMsg)
+{
+    m_servoMgr->servoSubscriber(navigateMsg.throttle, navigateMsg.angle); 
 }
  
 } /// namespace aa

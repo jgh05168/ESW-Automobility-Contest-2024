@@ -15,19 +15,33 @@ Para_Target(${PARA_APP_NAME}
             OUTPUT_NAME ${PARA_APP_NAME}
 )
 # ============================================================================
+# Find dependencies
+find_package(OpenCV REQUIRED COMPONENTS core imgproc imgcodecs)
+find_package(InferenceEngine REQUIRED)
+find_package(deepracer_interfaces_pkg REQUIRED)
+find_package(ngraph REQUIRED)
+# ============================================================================
+
 target_include_directories(${PARA_APP_NAME}
-                           PRIVATE
-                           ${CMAKE_CURRENT_SOURCE_DIR}/include)
+                            PRIVATE
+                            $/home/deepracer/minkyu/Inference/include
+                            ${OpenCV_INCLUDE_DIRS}
+                            ${InferenceEngine_INCLUDE_DIRS}
+)
+
 # ============================================================================
 target_link_libraries(${PARA_APP_NAME}
                       PRIVATE
-                      pthread)
+                      pthread
+                      ${OpenCV_LIBRARIES}
+                      ${InferenceEngine_LIBRARIES}
+                      ${NGRAPH_LIBRARIES})
 # ============================================================================
 target_sources(${PARA_APP_NAME}
                PRIVATE
                inference/aa/port/fusiondata.cpp
-               inference/aa/port/simulatordata.cpp
                inference/aa/port/inferencedata.cpp
                inference/aa/inference.cpp
+               inference/aa/image_process.cpp
                main.cpp
 )

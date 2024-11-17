@@ -10,7 +10,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// GENERATED FILE NAME               : fusiondata.h
 /// SOFTWARE COMPONENT NAME           : FusionData
-/// GENERATED DATE                    : 2024-10-25 13:47:26
+/// GENERATED DATE                    : 2024-11-13 13:00:52
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 #ifndef PARA_AA_GEN_SOFTWARE_COMPONENT_RPORT_INFERENCE_AA_FUSIONDATA_H
 #define PARA_AA_GEN_SOFTWARE_COMPONENT_RPORT_INFERENCE_AA_FUSIONDATA_H
@@ -46,17 +46,31 @@ public:
     /// @brief Terminate port
     void Terminate();
     
-    /// @brief Request with Response method using by software component, FMethod
-    void RequestFMethod(const deepracer::type::SensorFusionNode& sensorfusion);
-
-    void SetReceiveMethodFMethodHandler(
-        std::function<void(const deepracer::service::fusiondata::proxy::methods::FMethod::Output&)> handler);
+    /// @brief Subscribe event, FEvent
+    void SubscribeFEvent();
+     
+    /// @brief Stop event subscription, FEvent
+    void StopSubscribeFEvent();
+     
+    /// @brief Event receive handler, FEvent
+    void ReceiveEventFEventTriggered();
+     
+    /// @brief Event receive handler, FEvent
+    void ReceiveEventFEventCyclic();
+     
+    /// @brief Read event data, FEvent
+    void ReadDataFEvent(ara::com::SamplePtr<deepracer::service::fusiondata::proxy::events::FEvent::SampleType const> samplePtr);
+    
+    void SetReceiveEventFEventHandler(
+        std::function<void(const deepracer::service::fusiondata::proxy::events::FEvent::FEvent::SampleType&)> handler);
     
 private:
     /// @brief Callback for find service
     void Find(ara::com::ServiceHandleContainer<deepracer::service::fusiondata::proxy::SvFusionDataProxy::HandleType> handles,
               ara::com::FindServiceHandle findHandle);
     
+    /// @brief Callback for event receiver, FEvent
+    void RegistReceiverFEvent();
     
     
 private:
@@ -78,7 +92,9 @@ private:
     /// @brief Find service handle
     std::shared_ptr<ara::com::FindServiceHandle> m_findHandle;
 
-    std::function<void(const deepracer::service::fusiondata::proxy::methods::FMethod::Output& )> m_receiveMethodFMethodHandler;
+    // FEvent 이벤트 핸들러
+    std::function<void(const deepracer::service::fusiondata::proxy::events::FEvent::SampleType&)> m_receiveEventFEventHandler;
+
 };
  
 } /// namespace port

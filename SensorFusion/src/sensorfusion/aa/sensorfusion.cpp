@@ -10,12 +10,14 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// GENERATED FILE NAME               : sensorfusion.cpp
 /// SOFTWARE COMPONENT NAME           : SensorFusion
-/// GENERATED DATE                    : 2024-10-25 13:47:26
+/// GENERATED DATE                    : 2024-11-07 14:01:17
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// INCLUSION HEADER FILES
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-#include "sensorfusion/aa/sensorfusion.h"
- 
+#include "sensorfusion/aa/sensorfusion.h" 
+#include "deepracer/service/cameradata/svcameradata_proxy.h"
+#include "deepracer/service/lidardata/svlidardata_proxy.h"
+
 namespace sensorfusion
 {
 namespace aa
@@ -23,7 +25,10 @@ namespace aa
  
 SensorFusion::SensorFusion()
     : m_logger(ara::log::CreateLogger("SSFU", "SWC", ara::log::LogLevel::kVerbose))
-    , m_workers(2)
+    , m_workers(3)
+    // , m_sensorLData{{0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}}
+    // , m_sensorCData{{0U, 0U, 0U}, {0U, 0U, 0U}}
+    // , m_sensorTData{0LL}
 {
 }
  
@@ -36,8 +41,9 @@ bool SensorFusion::Initialize()
     m_logger.LogVerbose() << "SensorFusion::Initialize";
     
     bool init{true};
-    
+    //PPort
     m_FusionData = std::make_shared<sensorfusion::aa::port::FusionData>();
+    //RPort
     m_CameraData = std::make_shared<sensorfusion::aa::port::CameraData>();
     m_LidarData = std::make_shared<sensorfusion::aa::port::LidarData>();
     
@@ -47,8 +53,9 @@ bool SensorFusion::Initialize()
 void SensorFusion::Start()
 {
     m_logger.LogVerbose() << "SensorFusion::Start";
-    
+    //피포
     m_FusionData->Start();
+    //알포
     m_CameraData->Start();
     m_LidarData->Start();
     
@@ -69,10 +76,50 @@ void SensorFusion::Run()
 {
     m_logger.LogVerbose() << "SensorFusion::Run";
     
-    m_workers.Async([this] { m_CameraData->ReceiveEventCEventCyclic(); });
-    m_workers.Async([this] { m_LidarData->ReceiveEventLEeventCyclic(); });
+    m_workers.Async([this] { TaskReceiveCEventCyclic(); });
+    m_workers.Async([this] { TaskReceiveLEventCyclic(); });
+    m_workers.Async([this] { m_FusionData->SendEventFEventCyclic();});
     
     m_workers.Wait();
+}
+
+//CameraData CEvent의 Cyclic 수신처리에 대한 수행
+void SensorFusion::TaskReceiveCEventCyclic()
+{
+    m_CameraData->SetReceiveEventCEventHandler([this](const auto& sample)
+    {
+        OnReceiveCEvent(sample);
+    });
+    m_CameraData->ReceiveEventCEventCyclic();
+}
+//LidarData LEvent의 Cyclic 수신처리에 대한 수행
+void SensorFusion::TaskReceiveLEventCyclic()
+{
+    m_LidarData->SetReceiveEventLEventHandler([this](const auto& sample)
+    {
+        OnReceiveLEvent(sample);
+    });
+    m_LidarData->ReceiveEventLEventCyclic();
+}
+// CameraData CEvent를 받았을시의 처리 함수
+//const deepracer::service::cameradata::proxy::events::CEvent::SampleType& sample
+void SensorFusion::OnReceiveCEvent(const deepracer::type::CameraDataNode& sample)
+{
+    m_logger.LogInfo() << "SensorFusion::OnReceiveCEvent:timestemp" << sample.timestamp;
+    // deepracer::service::fusiondata::skeleton::events::FEvent::SampleType camera_sample;
+    // camera_sample.camera_data[0] = sample.camera_data0;
+    // camera_sample.camera_data[1] = sample.camera_data1;
+    m_FusionData->WriteDataFEventCamera(sample);
+}
+//const deepracer::service::lidardata::proxy::events::LEvent::SampleType& sample
+void SensorFusion::OnReceiveLEvent(const deepracer::type::LidarDataNode& sample)
+{
+    m_logger.LogInfo() << "SensorFusion::OnReceiveLEvent:timestemp" << sample.timestamp;
+
+    // deepracer::service::fusiondata::skeleton::events::FEvent::SampleType lidar_sample;
+    // lidar_sample.lidar_data = sample.lidar_data;
+    // lidar_sample.timestamp = sample.timestamp;
+    m_FusionData->WriteDataFEventLidar(sample);
 }
  
 } /// namespace aa

@@ -17,15 +17,17 @@ Para_Target(${PARA_APP_NAME}
 # ============================================================================
 target_include_directories(${PARA_APP_NAME}
                            PRIVATE
-                           ${CMAKE_CURRENT_SOURCE_DIR}/include)
+                           ${CMAKE_CURRENT_SOURCE_DIR}/include
+                           /home/deepracer/rplidar_sdk/sdk/include/)
 # ============================================================================
 target_link_libraries(${PARA_APP_NAME}
                       PRIVATE
-                      pthread)
+                      pthread
+                      /home/deepracer/rplidar_sdk/output/Linux/Release/libsl_lidar_sdk.a)
 # ============================================================================
 target_sources(${PARA_APP_NAME}
                PRIVATE
-               lidar/aa/port/lidar.cpp
+               lidar/aa/port/lidardata.cpp
                lidar/aa/lidar.cpp
                main.cpp
 )
