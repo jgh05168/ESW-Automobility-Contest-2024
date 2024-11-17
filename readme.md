@@ -107,11 +107,13 @@
 
 ## 실차 주행 영상
 
-(https://www.youtube.com/shorts/9_1Xo4drMzE) 
+- https://www.youtube.com/shorts/9_1Xo4drMzE
+  
+<a href="https://www.youtube.com/watch?v=9_1Xo4drMzE" target="_blank">
+  <img src="https://img.youtube.com/vi/9_1Xo4drMzE/0.jpg" alt="YouTube Video Thumbnail" width="600">
+</a>
 
-
-AutoSAR.io, 
-대회 결선 주행 순위 : 3위
+- 대회 결선 주행 순위 : 3위
 
 ## 팀원소개
 - 대회 참여 기간 : 2024년 7월 9일~ 2024년 11월 17일
