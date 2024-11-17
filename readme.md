@@ -122,7 +122,7 @@
 | 이민규 | 고광현 | 전규훈 | 정진솔 |
 | --- | --- | --- | --- |
 | 팀장 | 팀원 | 팀원 | 팀원 |
-| <img src="etc/이민규.jpg" width="100" height="130" style="border-radius:10px;"> | <img src="etc/고광현.jpg" width="100" height="130" style="border-radius:10px;"> | <img src="etc/전규훈.png" width="100" height="130" style="border-radius:10px;"> | <img src="etc/정진솔.png" width="100" height="130" style="border-radius:10px;"> |
+| <img src="etc/이민규.jpg" width="100" height="130" style="border-radius:10px;"> | <img src="etc/고광현.jpg" width="100" height="130" style="border-radius:10px;"> | <img src="etc/전규훈.png" width="100" height="130" style="border-radius:10px;" alt="규훈아사진좀올려라"> | <img src="etc/정진솔.png" width="100" height="130" style="border-radius:10px;"> |
 | ARXML 설계, Inference AA 개발 | Navigate AA, Servo AA 개발 | 강화학습 모델 구축 및 최적화, Inference AA 개발 | Camera AA, Lidar AA, SensorFusion AA 개발 |
 
 
