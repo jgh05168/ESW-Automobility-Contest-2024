@@ -18,14 +18,13 @@
 #include "inference/aa/inference.h"
 #include "inference/aa/image_process.hpp"
 #include <exception>
-#define RAD2DEG(x) ((x) * 180. / M_PI)
 #include <opencv2/opencv.hpp>
 #include <vector>
 #include <mutex>
-// 추가한 코드 (1줄)
 #include "deepracer/type/impl_type_inferencedatanode.h"
 std::mutex inference_mutex;
 using namespace cv;
+
 const std::string LIDAR = "LIDAR";
 const std::string STEREO = "STEREO_CAMERAS";
 const std::string FRONT = "FRONT_FACING_CAMERA";
@@ -80,7 +79,11 @@ namespace inference
                 // Loop through the inputNamesArr and set the precision
                 for (const auto &pair : network.getInputsInfo())
                 {
-                    if (pair.first.rfind(OBS) != std::string::npos || pair.first.rfind(LIDAR) != std::string::npos || pair.first.rfind(FRONT) != std::string::npos || pair.first.rfind(STEREO) != std::string::npos || pair.first.rfind(LEFT) != std::string::npos)
+                    if (pair.first.rfind(OBS) != std::string::npos || 
+                        pair.first.rfind(LIDAR) != std::string::npos || 
+                        pair.first.rfind(FRONT) != std::string::npos || 
+                        pair.first.rfind(STEREO) != std::string::npos || 
+                        pair.first.rfind(LEFT) != std::string::npos)
                     {
                         inputNamesArr.push_back(pair.first);
                         pair.second->setPrecision(inputPrec);
@@ -94,57 +97,6 @@ namespace inference
                 return executableNetwork.CreateInferRequest();
             }
 
-            /// Helper method that loads grey images into the inference engine input
-            /// @param inputPtr Pointer to the input data.
-            /// @param imgProcessPtr Pointer to the image processing algorithm.
-            /// @param imgData ROS message containing the image data.
-            /// @param params Hash map of relevant parameters for image processing.
-            // template<typename T, typename V> void load1DImg(V *inputPtr,
-            //                                                 cv::Mat &retImg,
-            //                                                 std::shared_ptr<InferTask::ImgProcessBase> imgProcessPtr,
-            //                                                 const sensor_msgs::msg::Image &imgData,
-            //                                                 const std::unordered_map<std::string, int> &params) {
-            // imgProcessPtr->processImage(imgData, retImg, params);
-            // if (retImg.empty()) {
-            //     throw InferenceExcept("No image after pre-process");
-            // }
-            // int height = retImg.rows;
-            // int width = retImg.cols;
-
-            // for (int  h = 0; h < height; h++) {
-            //     for (int w = 0; w < width; w++) {
-            //         inputPtr[h * width + w] = retImg.at<T>(h, w);
-            //     }
-            // }
-            // }
-
-            /// Helper method that loads multi channel images into the inference engine input
-            /// @param inputPtr Pointer to the input data.
-            /// @param imgProcessPtr Pointer to the image processing algorithm.
-            /// @param imgData ROS message containing the image data.
-            /// @param params Hash map of relevant parameters for image processing.
-            template <typename T, typename V>
-            void loadStackImg(V *inputPtr,
-                              cv::Mat &retImg,
-                              std::shared_ptr<InferTask::ImgProcessBase> imgProcessPtr,
-                              const deepracer::service::fusiondata::proxy::events::FEvent::SampleType &fusiondata,
-                              const std::unordered_map<std::string, int> &params)
-            {
-                imgProcessPtr->processImage(fusiondata, retImg, params);
-                if (retImg.empty())
-                {
-                    throw InferenceExcept("No image after-pre process");
-                }
-                const int channelSize = retImg.rows * retImg.cols;
-
-                for (size_t pixelNum = 0; pixelNum < channelSize; ++pixelNum)
-                {
-                    for (size_t ch = 0; ch < retImg.channels(); ++ch)
-                    {
-                        inputPtr[(ch * channelSize) + pixelNum] = retImg.at<T>(pixelNum)[ch];
-                    }
-                }
-            }
 
             /// Helper method that loads multi channel images into the inference engine input
             /// @param inputPtr Pointer to the input data.
@@ -203,7 +155,6 @@ namespace inference
             {
                 if (!imgProcess)
                 {
-                    // RCLCPP_ERROR(inferenceNode->get_logger(), "Invalid image processing algorithm");
                     return false;
                 }
                 // Set the image processing algorithms
@@ -225,7 +176,6 @@ namespace inference
                 }
                 catch (const std::exception &ex)
                 {
-                    // RCLCPP_ERROR(inferenceNode->get_logger(), "Model failed to load: %s", ex.what());
                     return false;
                 }
                 return true;
@@ -243,10 +193,12 @@ namespace inference
             //     doInference_ = false;
             // }
 
+            // return type : deepracer::type::InferenceDataNode
             deepracer::type::InferenceDataNode RLInferenceModel::sensorCB(const deepracer::service::fusiondata::proxy::events::FEvent::FEvent::SampleType &fusiondata)
             {
                 try
                 {
+                    // data preprocessing
                     for (size_t i = 0; i < inputNamesArr_.size(); ++i)
                     {
                         auto inputPtr = inferRequest_.GetBlob(inputNamesArr_[i])->buffer().as<InferenceEngine::PrecisionTrait<InferenceEngine::Precision::FP32>::value_type *>();
@@ -260,19 +212,10 @@ namespace inference
                         {
                             loadStereoImg<cv::Vec2b, float>(inputPtr, retData, imgProcess_, fusiondata, paramsArr_[i]);
                         }
-                        // else if (inputNamesArr_[i].find(FRONT) != std::string::npos
-                        //           || inputNamesArr_[i].find(LEFT) != std::string::npos
-                        //           || inputNamesArr_[i].find(OBS) != std::string::npos) {
-                        //     load1DImg<uchar, float>(inputPtr, retData, imgProcess_, fusiondata, paramsArr_[i]);
-                        // }
                         else if (inputNamesArr_[i].find(LIDAR) != std::string::npos)
                         {
                             loadLidarData(inputPtr, fusiondata);
                         }
-                        // else
-                        // {
-                        //     return;
-                        // }
                         imgProcess_->reset();
                     }
                     // Do inference
@@ -290,14 +233,13 @@ namespace inference
 
                     for (size_t label = 0; label < outputDims[1]; ++label)
                     {
-                        // 삭제한 코드: 딥레이서 데이터 타입말고 (1줄)
                         // auto inferData = deepracer_interfaces_pkg::msg::InferResults();
-                        // 추가한 코드: 우리꺼 쓰자 (1줄)
                         deepracer::type::InferenceData inferData;
                         inferData.class_label = label;
                         inferData.class_prob = outputData[label];
                         // Set bounding box data to -1 to indicate to subscribers that this model offers no
                         // localization information.
+                        // 필요없는 데이터타입
                         inferData.x_min = -1.0;
                         inferData.y_min = -1.0;
                         inferData.x_max = -1.0;
@@ -306,12 +248,8 @@ namespace inference
                     }
                     // 이 아래에 navigate로 Event를 보내는 코드 작성 ( 수정 필요 )
 
-                    // 추가한 코드: 데이터 전송 (1줄)
-
                     return inferMsg;
-                    /*
 
-                    */
                 }
                 catch (const std::exception &ex)
                 {
@@ -345,13 +283,13 @@ namespace inference
             m_InferenceData = std::make_shared<inference::aa::port::InferenceData>();
             // 여기서 Inference_load_model 객체 생성
             m_Model = std::make_shared<inference::aa::IntelInferenceEngine::RLInferenceModel>();
-            m_Model->loadModel("/opt/aws/deepracer/artifacts/jangdeokdong-model/", std::make_shared<inference::aa::InferTask::Grey>(false, false));
+            m_Model->loadModel("/opt/aws/deepracer/artifacts/jangdeokdong-model/", 
+                                std::make_shared<inference::aa::InferTask::Grey>(false, false));
 
             return init;
         }
 
-        // 컴포넌트 시작 함수
-
+        // 컴포넌트 시작
         void Inference::Start()
         {
             m_logger.LogVerbose() << "Inference::Start";
@@ -377,31 +315,16 @@ namespace inference
         {
             m_logger.LogVerbose() << "Inference::Run";
 
-            // 모델 불러오기 ( 수정 필요 )
-            // inference_node.cpp 132번째 줄 확인
-            // m_Inference = std::make_shared<inference::aa::Inference::RLInferenceModel>();
-
-            // 매 주기마다 IEvent 데이터를 전송
             m_workers.Async([this]
                             { m_InferenceData->SendEventIEventCyclic(); });
             m_workers.Async([this]
                             { TaskReceiveFEventCyclic(); });
             /*
             inference에서 처리해야 할 일
-            1. Fusion에서 데이터 수신 : TaskRequestFMethod()
-                1-2. Fusion 측에 Method 요청
-            2. 요청 받으면 모델 판별 시작
+            1. Fusion에서 데이터 수신 : TaskReceiveFEventCyclic()
+            2. 모델 판별 시작
             3. Navigator에 데이터 송신 : SendEventIEventCyclic()
             */
-
-            /*
-            실행 순서 :
-            Run() -> TaskRequestFMethod() -> Response 처리 핸들러(SetReceiveMethodFMethodHandler) 등록
-                -> RequestFMethod() -> 데이터 받았으면, OnReceiveFMethod() -> 모델 추론 -> WriteDataIEvent()
-            */
-
-            m_workers.Async([this]
-                            { m_InferenceData->SendEventIEventCyclic(); });
 
             m_workers.Wait();
         }
@@ -411,12 +334,17 @@ namespace inference
         {
 
             m_FusionData->SetReceiveEventFEventHandler([this](const auto &FEvent){
-                                                        std::lock_guard<std::mutex> lock(inference_mutex);
-                                                        OnReceiveFEvent(FEvent); });
+                                                        // 뮤텍스 락 시도
+                                                        std::unique_lock<std::mutex> lock(inference_mutex, std::try_to_lock);
+                                                        if (lock.owns_lock()) {
+                                                            // 락 성공 시 이벤트 처리
+                                                            OnReceiveFEvent(FEvent);
+                                                            }
+                                                        });
             m_FusionData->ReceiveEventFEventCyclic();
         }
 
-        // Fusion FEvent에 대한 Response를 받았을시의 처리 함수
+        // Fusion FEvent에 대한 Response를 받았을 시 처리 함수
         void Inference::OnReceiveFEvent(const deepracer::service::fusiondata::proxy::events::FEvent::FEvent::SampleType &FEvent)
         {
 

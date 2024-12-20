@@ -39,7 +39,6 @@ namespace inference
             // virtual void startInference() = 0;
             /// Stops the inference task if running.
         };
-        // namespace Intel 머시기 내일 등록하기
         namespace IntelInferenceEngine
         {
             class RLInferenceModel : public inference::aa::InferenceBase
@@ -65,7 +64,7 @@ namespace inference
         }
 
         class Inference
-        {
+        { 
         public:
             /// @brief Constructor
             Inference();

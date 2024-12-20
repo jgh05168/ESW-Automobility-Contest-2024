@@ -26,7 +26,7 @@ namespace inference
 {
 namespace aa
 {
-
+ 
 namespace InferTask {
 
     class ImgProcessBase
@@ -73,22 +73,6 @@ namespace InferTask {
         const bool isMask_;
     };
 
-    class GreyDiff : public ImgProcessBase
-    {
-    public:
-        GreyDiff() = default;
-        virtual ~GreyDiff() = default;
-        virtual void processImage(const deepracer::service::fusiondata::proxy::events::FEvent::SampleType& fusiondata, cv::Mat& retImg,
-                                  const std::unordered_map<std::string, int> &params) override;
-        virtual void processImageVec(const deepracer::service::fusiondata::proxy::events::FEvent::SampleType& fusiondata, cv::Mat& retImg,
-                                     const std::unordered_map<std::string, int> &params) override {(void)fusiondata;(void)retImg;(void)params;}
-        virtual void reset() override;
-        virtual const std::string getEncode() const;
-    private:
-        cv::Mat prevImage_;
-
-
-    };
 }
 
 }

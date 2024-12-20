@@ -19,10 +19,6 @@
 #include <vector>
 namespace
 {
-    const int THRESHOLD = 0;
-    const int PXL_MAX_VALUE = 255;
-    const int ROW_IDX = 40;
-    const int MASK_VALUE = 0;
     bool cvtToCVObjResize(const std::vector<uchar> &output, cv::Mat &retImg,
                           const std::unordered_map<std::string, int> &params)
     {
@@ -62,65 +58,7 @@ namespace
 
         return true;
     }
-    void stack(cv::Mat &currImg, cv::Mat &retImg,
-               std::vector<cv::Mat> &imageStack, const std::unordered_map<std::string, int> &params)
-    {
-        auto itChannels = params.find("channels");
-        if (itChannels == params.end())
-        {
-            return;
-        }
-        // Add image to the stack.
-        if (imageStack.empty())
-        {
-            for (int i = 0; i < itChannels->second; ++i)
-            {
-                imageStack.push_back(currImg);
-            }
-        }
-        else
-        {
-            // Remove the oldest image which should be in the back
-            imageStack.pop_back();
-            // Add the current image to the front of the std::vector, this will be of order
-            // N, if OpenCV refactors cv::merge to used std::deque refactor immediately.
-            imageStack.insert(imageStack.begin(), currImg);
-        }
-        // Populate the return image with the image stack
-        cv::merge(imageStack, retImg);
-    }
-    /// Helper method that masks the top half of an image.
-    /// @param retImg Reference to the image that will be passed to the inference engine
-    /// @param rowStopIdx Row index to terminate the masking.
-    /// @param maskValue Pixel value for the mask
-    void masking(cv::Mat &retImg, int rowStopIdx, int maskValue)
-    {
-        if (rowStopIdx > retImg.rows)
-        {
-            return;
-        }
-        for (int j = 0; j < rowStopIdx; j++)
-        {
-            for (int i = 0; i < retImg.cols; i++)
-            {
-                retImg.at<uchar>(j, i) = maskValue;
-            }
-        }
-    }
-    /// Helper method that applies thresholding
-    /// @param retImg Reference to the image that will be passed to the inference engine
-    /// @param thresh Threshold value
-    /// @param maximum value to use with cv::THRESH_BINARY
-    void threshold(cv::Mat &retImg, int thresh, int maxValue)
-    {
-        try
-        {
-            cv::threshold(retImg, retImg, thresh, maxValue, cv::THRESH_BINARY + cv::THRESH_OTSU);
-        }
-        catch (...)
-        {
-        }
-    }
+    
 }
 
 namespace inference
@@ -147,36 +85,10 @@ namespace inference
             {
             }
 
-            void Grey::processImage(const deepracer::service::fusiondata::proxy::events::FEvent::SampleType &fusiondata, cv::Mat &retImg,
-                                    const std::unordered_map<std::string, int> &params)
-            {
-                cv::Mat currImg;
-                if (cvtToCVObjResize(fusiondata.camera_data[0], currImg, params))
-                {
-                    try
-                    {
-                        cv::cvtColor(currImg, currImg, cv::COLOR_BGR2GRAY);
-                        if (isThreshold_)
-                        {
-                            threshold(currImg, THRESHOLD, PXL_MAX_VALUE);
-                        }
-                        if (isMask_)
-                        {
-                            masking(currImg, ROW_IDX, MASK_VALUE);
-                        }
-                        stack(currImg, retImg, imageStack_, params);
-                    }
-                    catch (...)
-                    {
-                        return;
-                    }
-                }
-            }
-            void Grey::processImageVec(const deepracer::service::fusiondata::proxy::events::FEvent::SampleType &fusiondata, cv::Mat &retImg,
-                                       const std::unordered_map<std::string, int> &params)
+            void Grey::processImageVec(const deepracer::service::fusiondata::proxy::events::FEvent::SampleType &fusiondata, 
+                                cv::Mat &retImg, const std::unordered_map<std::string, int> &params)
             {
                 // Left camera image is sent as the top image and the right camera image is sent as second in the std::vector.
-                // Stack operation replaces the beginning values as we loop through and hence we loop in decreasing order
                 try
                 {
                     std::vector<cv::Mat> channels;
@@ -201,41 +113,6 @@ namespace inference
             }
 
             const std::string Grey::getEncode() const
-            {
-                return "mono8";
-            }
-
-            void GreyDiff::processImage(const deepracer::service::fusiondata::proxy::events::FEvent::SampleType &fusiondata, cv::Mat &retImg,
-                                        const std::unordered_map<std::string, int> &params)
-            {
-                (void)retImg;
-                cv::Mat currImg;
-                if (cvtToCVObjResize(fusiondata.camera_data[0], currImg, params))
-                {
-                    try
-                    {
-                        // Convert to greyscale
-                        cv::cvtColor(currImg, currImg, cv::COLOR_BGR2GRAY);
-                        bool isFirstImg = prevImage_.empty();
-                        prevImage_.copyTo(currImg);
-                        if (!isFirstImg)
-                        {
-                            currImg = currImg - prevImage_;
-                        }
-                    }
-                    catch (...)
-                    {
-                        return;
-                    }
-                }
-            }
-
-            void GreyDiff::reset()
-            {
-                prevImage_.release();
-            }
-
-            const std::string GreyDiff::getEncode() const
             {
                 return "mono8";
             }
