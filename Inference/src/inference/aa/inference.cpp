@@ -334,12 +334,7 @@ namespace inference
         {
 
             m_FusionData->SetReceiveEventFEventHandler([this](const auto &FEvent){
-                                                        // 뮤텍스 락 시도
-                                                        std::unique_lock<std::mutex> lock(inference_mutex, std::try_to_lock);
-                                                        if (lock.owns_lock()) {
-                                                            // 락 성공 시 이벤트 처리
                                                             OnReceiveFEvent(FEvent);
-                                                            }
                                                         });
             m_FusionData->ReceiveEventFEventCyclic();
         }
